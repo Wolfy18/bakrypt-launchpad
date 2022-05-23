@@ -1,27 +1,24 @@
-import { html, css, LitElement } from 'lit';
-import { property } from 'lit/decorators.js';
+import { css } from 'lit';
+import { html } from 'haunted';
+import shoeStyles from '@shoelace-style/shoelace/dist/themes/light.styles';
+import { style } from './assets/css/main.css';
+import { gridStyles } from './assets/css/grid.css';
+import { useStyles } from './hooks/useStyles';
 
-export class BakryptLaunchpad extends LitElement {
-  static styles = css`
-    :host {
-      display: block;
-      padding: 25px;
-      color: var(--bakrypt-launchpad-text-color, #000);
-    }
-  `;
+function BakryptLaunchpad(this: unknown) {
+  useStyles(this, [
+    gridStyles,
+    shoeStyles,
+    style,
+    css`
+      :host {
+        font-family: 'arial';
+        font-weight: 400;
+      }
+    `,
+  ]);
 
-  @property({ type: String }) title = 'Hey there';
-
-  @property({ type: Number }) counter = 5;
-
-  __increment() {
-    this.counter += 1;
-  }
-
-  render() {
-    return html`
-      <h2>${this.title} Nr. ${this.counter}!</h2>
-      <button @click=${this.__increment}>increment</button>
-    `;
-  }
+  return html` <h2 style="text-align:center; width: 100%">Hello</h2> `;
 }
+
+export { BakryptLaunchpad };
