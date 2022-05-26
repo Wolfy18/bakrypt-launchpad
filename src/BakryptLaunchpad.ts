@@ -1,11 +1,16 @@
 import { css } from 'lit';
-import { html } from 'haunted';
+import { html, component, useEffect } from 'haunted';
 import shoeStyles from '@shoelace-style/shoelace/dist/themes/light.styles';
 import { style } from './assets/css/main.css';
 import { gridStyles } from './assets/css/grid.css';
 import { useStyles } from './hooks/useStyles';
+import { BasicComponent } from './components/tab';
+// import '@shoelace-style/shoelace/dist/components/button/button';
+// import '@shoelace-style/shoelace/dist/components/button-group/button-group';
 
-function BakryptLaunchpad(this: unknown) {
+window.customElements.define('bk-tab', component(BasicComponent));
+
+function BakryptLaunchpad(this: any) {
   useStyles(this, [
     gridStyles,
     shoeStyles,
@@ -18,7 +23,30 @@ function BakryptLaunchpad(this: unknown) {
     `,
   ]);
 
-  return html` <h2 style="text-align:center; width: 100%">Hello</h2> `;
+  useEffect(async () => {
+    console.log('alerrt!!');
+    for (let i = 0; i <= 5; i += 1) {
+      const bkTab: any = document.createElement('bk-tab');
+      bkTab.index = i + 1;
+      console.log(bkTab);
+      // this.shadowRoot.appendChild(bkTab);
+      this.shadowRoot.querySelector('.tab-container').appendChild(bkTab);
+      console.log('added! -----');
+    }
+  }, []);
+
+  return html`
+    <div class="container">
+      <h2 style="text-align:center; width: 100%">Hello</h2>
+      <div class="tab-container">
+        <bk-tab .index=${0}></bk-tab>
+      </div>
+    </div>
+    <!-- <sl-button-group>
+      <sl-button>Left</sl-button>
+      <sl-button>Right</sl-button>
+    </sl-button-group> -->
+  `;
 }
 
 export { BakryptLaunchpad };

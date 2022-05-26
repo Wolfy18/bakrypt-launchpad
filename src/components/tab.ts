@@ -2,8 +2,10 @@ import { css } from 'lit';
 import { html, component, useState, useEffect } from 'haunted';
 import { useStyles } from '../hooks/useStyles';
 
-function BasicComponent(this: unknown) {
-  useStyles(this, [css``]);
-  return html``;
+function BasicComponent(this: any, {index}: {index:number}) {
+  useStyles(this, [css`:host {
+      text-align: center
+  }`]);
+  return html` <p>lorem ${index}</p>`;
 }
 export { BasicComponent };
