@@ -10,6 +10,10 @@
     ".": "./dist/src/index.js",
     "./bakrypt-launchpad.js": "./dist/src/bakrypt-launchpad.js"
   },
+  "imports": {
+    "#lit": "https://unpkg.com/lit?module",
+    "#haunted": "https://unpkg.com/haunted/haunted.js"
+  },
   "scripts": {
     "analyze": "cem analyze --litelement",
     "start": "tsc && concurrently -k -r \"tsc --watch --preserveWatchOutput\" \"wds\"",
@@ -22,10 +26,10 @@
   },
   "dependencies": {
     "@emurgo/cardano-serialization-lib-asmjs": "^10.0.4",
-    "@shoelace-style/shoelace": "^2.0.0-beta.72",
+    "@shoelace-style/shoelace": "^2.0.0-beta.74",
     "bootstrap-4-grid": "^3.4.0",
-    "haunted": "^4.8.3",
-    "lit": "^2.0.2"
+    "haunted": "^5.0.0",
+    "lit": "^2.2.5"
   },
   "devDependencies": {
     "@custom-elements-manifest/analyzer": "^0.4.17",
