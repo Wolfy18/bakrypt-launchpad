@@ -10,6 +10,19 @@ import '@shoelace-style/shoelace/dist/components/button-group/button-group';
 
 window.customElements.define('bk-tab', component(BasicComponent));
 
+interface AccessToken {
+  access_token: string;
+  expires_in: number;
+  token_type: string;
+  scope: string;
+  refresh_token: string;
+}
+
+interface ErrorResponse {
+  error: string;
+  error_description?: string;
+}
+
 function BakryptLaunchpad(this: any) {
   useStyles(this, [
     gridStyles,
@@ -23,19 +36,38 @@ function BakryptLaunchpad(this: any) {
     `,
   ]);
 
-  const [accessToken, setAccessToken] = useState();
-  const [refreshToken, setRefreshToken] = useState();
+  const [accessToken, setAccessToken] = useState('');
+  const [refreshToken, setRefreshToken] = useState('');
+
+  const refreshAccessToken = async (token: string) => {
+    try {
+      if (token) {
+        const tokenRequest = await fetch(``, {
+          method: 'post',
+          headers: {
+            'content-type': 'application/json',
+          },
+          body: JSON.stringify({ refreshToken: token }),
+        });
+
+        if (tokenRequest.ok) {
+          const tokenResponse: AccessToken = await tokenRequest.json();
+
+          setAccessToken(tokenResponse.access_token);
+        } else {
+          const tokenResponse: ErrorResponse = await tokenRequest.json();
+          console.log(tokenResponse.error_description);
+        }
+      }
+    } catch (error) {
+      console.log(error);
+    }
+    console.log('Ran -----');
+    setTimeout(refreshAccessToken, 300000); // Every 30 minutes
+  };
 
   useEffect(async () => {
-    console.log('alerrt!!');
-    for (let i = 0; i <= 5; i += 1) {
-      const bkTab: any = document.createElement('bk-tab');
-      bkTab.index = i + 1;
-      console.log(bkTab);
-      // this.shadowRoot.appendChild(bkTab);
-      this.shadowRoot.querySelector('.tab-container').appendChild(bkTab);
-      console.log('added! -----');
-    }
+    console.log('init component...');
 
     const _access = this.getAttribute('access-token');
     if (_access) {
@@ -46,7 +78,22 @@ function BakryptLaunchpad(this: any) {
     if (_refresh) {
       setRefreshToken(_refresh);
     }
-  }, []);
+    console.log(refreshToken);
+    if (refreshToken) {
+      refreshAccessToken(refreshToken);
+    }
+
+    if (accessToken) {
+      for (let i = 0; i <= 5; i += 1) {
+        const bkTab: any = document.createElement('bk-tab');
+        bkTab.index = i + 1;
+        this.shadowRoot.querySelector('.tab-container').appendChild(bkTab);
+
+        console.log(bkTab);
+        console.log('added! -----');
+      }
+    }
+  }, [accessToken]);
 
   return html`
     <div class="container">
