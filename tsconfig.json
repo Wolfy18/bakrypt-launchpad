@@ -16,11 +16,7 @@
     "rootDir": "./",
     "declaration": true,
     "incremental": true,
-    "preserveSymlinks": true,
-    "paths": {
-      "#lit": ["https://unpkg.com/lit?module"],
-      "#haunted": ["https://unpkg.com/haunted/haunted.js"]
-    }
+    "preserveSymlinks": true
   },
   "include": ["**/*.ts"]
 }

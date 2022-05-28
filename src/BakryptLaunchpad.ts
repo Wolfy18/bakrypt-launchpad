@@ -90,7 +90,7 @@ function BakryptLaunchpad(this: any) {
         this.shadowRoot.querySelector('.tab-container').appendChild(bkTab);
 
         console.log(bkTab);
-        console.log('added! -----');
+        console.log('Add tab...');
       }
     }
   }, [accessToken]);
