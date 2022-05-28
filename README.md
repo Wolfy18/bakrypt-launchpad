@@ -15,7 +15,7 @@ npm i bakrypt-launchpad
   import 'bakrypt-launchpad/bakrypt-launchpad.js';
 </script>
 
-<bakrypt-launchpad></bakrypt-launchpad>
+<bakrypt-launchpad access-token="ACCESSTOKEN" refresh-token="REFRESHTOKEN"></bakrypt-launchpad>
 ```
 
 ## Linting and formatting
