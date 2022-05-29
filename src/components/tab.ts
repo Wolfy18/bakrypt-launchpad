@@ -6,6 +6,7 @@ function Tab(this: any, {index}: {index:number}) {
   useStyles(this, [css`:host {
       text-align: center
   }`]);
-  return html` <p>lorem ${index}</p>`;
+  return html` <p>lorem ${index} - Ipsum</p>
+    <sl-button>Just a button!</sl-button>`;
 }
 export { Tab };
