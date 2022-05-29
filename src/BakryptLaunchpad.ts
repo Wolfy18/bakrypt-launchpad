@@ -4,11 +4,11 @@ import shoeStyles from '@shoelace-style/shoelace/dist/themes/light.styles';
 import { style } from './assets/css/main.css';
 import { gridStyles } from './assets/css/grid.css';
 import { useStyles } from './hooks/useStyles';
-import { BasicComponent } from './components/tab';
+import { Tab } from './components/tab';
 import '@shoelace-style/shoelace/dist/components/button/button';
 import '@shoelace-style/shoelace/dist/components/button-group/button-group';
 
-window.customElements.define('bk-tab', component(BasicComponent));
+window.customElements.define('bk-tab', component(Tab));
 
 interface AccessToken {
   access_token: string;
@@ -86,6 +86,7 @@ function BakryptLaunchpad(this: any) {
     if (accessToken) {
       for (let i = 0; i <= 5; i += 1) {
         const bkTab: any = document.createElement('bk-tab');
+        // Set the property
         bkTab.index = i + 1;
         this.shadowRoot.querySelector('.tab-container').appendChild(bkTab);
 
@@ -96,11 +97,8 @@ function BakryptLaunchpad(this: any) {
   }, [accessToken]);
 
   return html`
-    <div class="container">
-      <h2 style="text-align:center; width: 100%">Hello</h2>
-      <div class="tab-container">
-        <bk-tab .index=${0}></bk-tab>
-      </div>
+    <div class="tab-container">
+      <bk-tab .index=${0}></bk-tab>
     </div>
     <sl-button-group>
       <sl-button>Left</sl-button>
