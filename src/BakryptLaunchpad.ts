@@ -36,6 +36,23 @@ interface ErrorResponse {
   error_description?: string;
 }
 
+interface IAssetFile {
+  name: string;
+  src: string;
+  mediaType: string;
+}
+interface IAsset {
+  blockchain: string;
+  name: string;
+  asset_name: string;
+  image: string;
+  mediaType: string;
+  description: string;
+  files: Array<IAssetFile>;
+  attrs: object;
+  amount: 1;
+}
+
 function BakryptLaunchpad(this: any) {
   // Escape html
   const escapeHtml = (text: string) => {
@@ -77,6 +94,7 @@ function BakryptLaunchpad(this: any) {
 
   const [accessToken, setAccessToken] = useState('');
   const [refreshToken, setRefreshToken] = useState('');
+  const [collectionRequest, setCollectionRequest] = useState();
   const [assetCount, setAssetCount] = useState(0);
 
   const refreshAccessToken = async (token: string) => {
@@ -103,22 +121,17 @@ function BakryptLaunchpad(this: any) {
       }
     } catch (error) {
       const err = `Unable to refresh access token: ${error}`;
-      notify(String(err), "error");
-      console.log(error);
+      notify(String(err), 'error');
     }
-    console.log('Ran -----');
+
     setTimeout(refreshAccessToken, 300000); // Every 30 minutes
   };
 
   const addAdditionalAsset = () => {
-    const count = assetCount + 1;
     const template = this.shadowRoot.querySelector('#asset-template');
 
     const container = this.shadowRoot.querySelector('sl-tab-group');
     if (container) {
-      console.log(template);
-      // const tmp = template.innerHTML.replace(/__prefix__/g, count);
-      console.log(template.innerHTML);
       container.appendChild(template.content.cloneNode(true));
     }
   };
@@ -134,26 +147,24 @@ function BakryptLaunchpad(this: any) {
         },
         body: payload,
       });
-      
+
       if (createAttachmentRequest.ok) {
         const jsonResponse = await createAttachmentRequest.json();
         console.log(jsonResponse);
         notify('Successfully uploaded file to IPFS', 'success');
-      }else{
-        const jsonResponse : ErrorResponse = await createAttachmentRequest.json();
+      } else {
+        const jsonResponse: ErrorResponse =
+          await createAttachmentRequest.json();
         if (jsonResponse.error_description)
           notify(jsonResponse.error_description, 'error');
       }
-      
     } catch (error) {
       console.log(error);
-      notify("Unable to upload file to IPFS server", "error");
+      notify('Unable to upload file to IPFS server', 'error');
     }
   };
 
   useEffect(async () => {
-    console.log('init component...');
-
     const _access = this.getAttribute('access-token');
     if (_access) {
       setAccessToken(_access);
@@ -163,30 +174,42 @@ function BakryptLaunchpad(this: any) {
     if (_refresh) {
       setRefreshToken(_refresh);
     }
-    console.log(refreshToken);
+
     if (refreshToken) {
       refreshAccessToken(refreshToken);
     }
 
     if (accessToken) {
       // Do something over here
+      console.log("This ran! how many times!")
+      console.log(accessToken)
     }
   }, [accessToken]);
 
   return html`
     <div style="margin-bottom: 2rem">
       <sl-tab-group>
-        <sl-tab slot="nav" panel="general">Asset #1</sl-tab>
+        <sl-tab slot="nav" panel="primary">Primary Asset</sl-tab>
 
-        <sl-tab-panel name="general">
+        <sl-tab-panel name="primary">
           <div style="text-align: left; padding: 2rem">
-            Asset #1
+            Token Information
             <sl-divider style="--spacing: 2rem;"></sl-divider>
-            <bk-asset-form @upload-file=${uploadFile}></bk-asset-form>
+            <bk-asset-form
+              @upload-file=${uploadFile}
+              @token=${(e: CustomEvent) => {
+                if (e && e.detail && e.detail.token) {
+                  const asset: IAsset = e.detail.token;
+
+                  // Set primary asset
+                  setCollectionRequest([asset]);
+                }
+              }}
+            ></bk-asset-form>
           </div>
         </sl-tab-panel>
       </sl-tab-group>
-      <sl-button variant="primary">Submit request</sl-button>
+      <sl-button variant="primary" @click=${() => {console.log(collectionRequest)}}>Submit request</sl-button>
       <sl-button variant="primary" outline @click=${addAdditionalAsset}
         >Add Asset</sl-button
       >
@@ -199,7 +222,7 @@ function BakryptLaunchpad(this: any) {
 
         <sl-tab-panel name="__prefix__">
           <div style="text-align: left; padding: 2rem">
-            Asset #__prefix__
+            Token Information
             <sl-divider style="--spacing: 2rem;"></sl-divider>
             <bk-asset-form></bk-asset-form>
           </div>

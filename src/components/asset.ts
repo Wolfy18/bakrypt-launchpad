@@ -20,13 +20,13 @@ function AssetForm(this: any) {
 
   const [asset, setAsset] = useState({
     blockchain: 'ada',
-    name: "",
-    asset_name: "",
-    image: "",
-    mediaType: "",
-    description: "",
+    name: '',
+    asset_name: '',
+    image: '',
+    mediaType: '',
+    description: '',
     files: [],
-    attrs: "",
+    attrs: '',
     amount: 1,
   });
 
@@ -52,8 +52,19 @@ function AssetForm(this: any) {
     this.dispatchEvent(event);
   };
 
+  // Return callback with the token information
+  const token = () => {
+    const event = new CustomEvent('token', {
+      bubbles: true,
+      composed: true,
+      detail: { token: asset },
+    });
+
+    this.dispatchEvent(event);
+  };
+
   useEffect(() => {
-    console.log(asset);
+    token();
   }, [asset]);
 
   return html`
@@ -64,7 +75,7 @@ function AssetForm(this: any) {
       maxlength="64"
       value=${asset.name}
       @input=${(e: { path?: Array<any> }) => {
-        if (e.path && e.path.length > 0 && Number(e.path[0].value) > 1) {
+        if (e.path && e.path.length > 0) {
           setAsset({ ...asset, name: e.path[0].value });
         }
       }}
@@ -76,40 +87,13 @@ function AssetForm(this: any) {
         placeholder="Set the asset name. Only numbers and letters. Up to 32 chars"
         maxlength="32"
         value=${asset.asset_name}
+        type="text"
         @input=${(e: { path?: Array<any> }) => {
-          if (e.path && e.path.length > 0 && Number(e.path[0].value) > 1) {
+          if (e.path && e.path.length > 0) {
             setAsset({ ...asset, asset_name: e.path[0].value });
           }
         }}
       ></sl-input>
-    </sl-details>
-
-    <sl-input
-      label="Image*"
-      type="url"
-      placeholder="Which image would you like to use? IPFS links are recommended"
-      required
-      maxlength="64"
-      value=${asset.image}
-      @input=${(e: { path?: Array<any> }) => {
-        if (e.path && e.path.length > 0 && Number(e.path[0].value) > 1) {
-          setAsset({ ...asset, image: e.path[0].value });
-        }
-      }}
-    ></sl-input>
-
-    <sl-details summary="Upload file to IPFS">
-      Select a file to upload and whenevr you're ready press the upload button
-      to start pushing into IPFS.
-      <input type="file" id="ipfs-fileinput" />
-      <sl-button-group>
-        <sl-button variant="primary" @click=${requestUpload}
-          >Upload file to IPFS</sl-button
-        >
-        <sl-button variant="warning" outline @click=${clearFile}
-          >Clear file</sl-button
-        >
-      </sl-button-group>
     </sl-details>
 
     <sl-input
@@ -136,12 +120,40 @@ function AssetForm(this: any) {
       }}
     ></sl-input>
 
+    <sl-input
+      label="Cover Image*"
+      type="url"
+      placeholder="Which image would you like to use? IPFS links are recommended"
+      required
+      maxlength="64"
+      value=${asset.image}
+      @input=${(e: { path?: Array<any> }) => {
+        if (e.path && e.path.length > 0) {
+          setAsset({ ...asset, image: e.path[0].value });
+        }
+      }}
+    ></sl-input>
+
+    <sl-details summary="Do you want to upload a file to IPFS instead?">
+      Select a file to upload and whenevr you're ready press the upload button
+      to start pushing into IPFS.
+      <input type="file" id="ipfs-fileinput" />
+      <sl-button-group>
+        <sl-button variant="primary" @click=${requestUpload}
+          >Upload file to IPFS</sl-button
+        >
+        <sl-button variant="warning" outline @click=${clearFile}
+          >Clear file</sl-button
+        >
+      </sl-button-group>
+    </sl-details>
+
     <sl-textarea
       label="Description"
       placeholder="If you wish, write a description about the token"
       value=${asset.description}
       @input=${(e: { path?: Array<any> }) => {
-        if (e.path && e.path.length > 0 && Number(e.path[0].value) > 1) {
+        if (e.path && e.path.length > 0) {
           setAsset({ ...asset, description: e.path[0].value });
         }
       }}
