@@ -2,7 +2,7 @@ import { css } from 'lit';
 import { html, component, useState, useEffect } from 'haunted';
 import { useStyles } from '../hooks/useStyles';
 
-function AssetForm(this: any) {
+function AssetForm(this: any, {index}: {index:number | string | null}) {
   useStyles(this, [
     css`
       :host sl-input,
@@ -46,7 +46,7 @@ function AssetForm(this: any) {
     const event = new CustomEvent('upload-file', {
       bubbles: true,
       composed: true,
-      detail: { payload: payload },
+      detail: { payload: payload, index: index },
     });
 
     this.dispatchEvent(event);

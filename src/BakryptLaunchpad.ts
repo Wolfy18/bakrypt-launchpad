@@ -53,6 +53,18 @@ interface IAsset {
   amount: 1;
 }
 
+interface IFile {
+  uuid: string;
+  file: string;
+  name: string;
+  filename: string;
+  size: string;
+  mimetype: string;
+  ipfs: string;
+  gateway: string;
+  created_on: string;
+}
+
 function BakryptLaunchpad(this: any) {
   useStyles(this, [
     gridStyles,
@@ -131,7 +143,7 @@ function BakryptLaunchpad(this: any) {
   // Upload file to IPFS and return the generated attachment information
   const uploadFile = async (e: CustomEvent) => {
     const payload: FormData = e.detail.payload;
-
+    const index: number | string | null = e.detail.index;
     try {
       const createAttachmentRequest = await fetch(`${bakryptURI}/v1/files/`, {
         method: 'POST',
@@ -142,8 +154,18 @@ function BakryptLaunchpad(this: any) {
       });
 
       if (createAttachmentRequest.ok) {
-        const jsonResponse = await createAttachmentRequest.json();
+        const jsonResponse: IFile = await createAttachmentRequest.json();
         console.log(jsonResponse);
+        console.log(index);
+        if (Number(index) > -1) {
+          const col = collectionRequest as IAsset[];
+          console.log(col);
+          const asset: IAsset = col[Number(index)];
+          console.log(asset);
+          asset.image = jsonResponse.ipfs;
+          asset.mediaType = jsonResponse.mimetype;
+        }
+
         notify('Successfully uploaded file to IPFS', 'success');
       } else {
         const jsonResponse: ErrorResponse =
@@ -159,13 +181,19 @@ function BakryptLaunchpad(this: any) {
 
   // Add additional tab and panel
   const addAdditionalAsset = () => {
-    const template = this.shadowRoot.querySelector('#asset-template').cloneNode(true);
+    const template = this.shadowRoot
+      .querySelector('#asset-template')
+      .cloneNode(true);
 
     const container = this.shadowRoot.querySelector('sl-tab-group');
     if (container) {
       const indx = (collectionRequest as Array<IAsset>).length;
       template.innerHTML = template.innerHTML.replace(/__prefix__/g, indx + 1);
       const newNode = template.content.cloneNode(true);
+
+      // Set index
+      newNode.querySelector('bk-asset-form').index = indx;
+
       newNode
         .querySelector('bk-asset-form')
         .addEventListener('token', (e: CustomEvent) => {
@@ -204,6 +232,19 @@ function BakryptLaunchpad(this: any) {
       // Do something over here
       console.log('This ran! how many times!');
       console.log(accessToken);
+      setCollectionRequest([
+        {
+          blockchain: 'ada',
+          name: '',
+          asset_name: '',
+          image: '',
+          mediaType: '',
+          description: '',
+          files: [],
+          attrs: '',
+          amount: 1,
+        },
+      ]);
     }
   }, [accessToken]);
 
@@ -217,6 +258,7 @@ function BakryptLaunchpad(this: any) {
             Token Information
             <sl-divider style="--spacing: 2rem;"></sl-divider>
             <bk-asset-form
+              .index=${0}
               @upload-file=${uploadFile}
               @token=${(e: CustomEvent) => {
                 if (e && e.detail && e.detail.token) {
