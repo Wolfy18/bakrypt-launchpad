@@ -26,7 +26,7 @@ function AssetForm(this: any, {index}: {index:number | string | null}) {
     mediaType: '',
     description: '',
     files: [],
-    attrs: '',
+    attrs: {},
     amount: 1,
   });
 
@@ -46,7 +46,7 @@ function AssetForm(this: any, {index}: {index:number | string | null}) {
     const event = new CustomEvent('upload-file', {
       bubbles: true,
       composed: true,
-      detail: { payload: payload, index: index },
+      detail: { payload, index },
     });
 
     this.dispatchEvent(event);

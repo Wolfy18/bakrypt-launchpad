@@ -32,8 +32,9 @@ interface AccessToken {
 }
 
 interface ErrorResponse {
-  error: string;
+  error?: string;
   error_description?: string;
+  detail?: string;
 }
 
 interface IAssetFile {
@@ -75,12 +76,31 @@ function BakryptLaunchpad(this: any) {
         font-family: 'arial';
         font-weight: 400;
       }
+
+      :host sl-input,
+      :host input,
+      :host sl-textarea,
+      :host sl-details {
+        margin-bottom: 2rem;
+      }
+
+      :host .form-control__help-text {
+        margin-top: 0.5rem;
+      }
+
+      :host .component-section {
+        padding:0 2rem;
+      }
     `,
   ]);
 
   const [accessToken, setAccessToken] = useState('');
   const [refreshToken, setRefreshToken] = useState('');
   const [collectionRequest, setCollectionRequest] = useState();
+  const [royalties, setRoyalties] = useState({
+    rate: '',
+    address: '',
+  });
 
   // Escape html string
   const escapeHtml = (text: string) => {
@@ -93,7 +113,7 @@ function BakryptLaunchpad(this: any) {
   const notify = (
     message: string,
     variant = 'primary',
-    icon = 'info-circle',
+    icon = 'gear',
     duration = 3000
   ) => {
     const alert = Object.assign(document.createElement('sl-alert'), {
@@ -105,45 +125,96 @@ function BakryptLaunchpad(this: any) {
         ${escapeHtml(message)}
       `,
     });
+
     this.shadowRoot.querySelector('.alert-container').appendChild(alert);
+    // const notification = this.shadowRoot.querySelector('sl-alert');
+
+    alert.toast = async () => {
+      const toastStack = Object.assign(document.createElement('div'), {
+        className: 'sl-toast-stack',
+      });
+      return new Promise<void>(resolve => {
+        if (toastStack.parentElement === null) {
+          this.shadowRoot.append(toastStack);
+        }
+
+        toastStack.appendChild(alert);
+
+        // Wait for the toast stack to render
+        requestAnimationFrame(() => {
+          // eslint-disable-next-line @typescript-eslint/no-unused-expressions -- force a reflow for the initial transition
+          alert.clientWidth;
+          alert.show();
+        });
+
+        this.addEventListener(
+          'sl-after-hide',
+          () => {
+            toastStack.removeChild(alert);
+            resolve();
+
+            // Remove the toast stack from the DOM when there are no more alerts
+            if (toastStack.querySelector('sl-alert') === null) {
+              toastStack.remove();
+            }
+          },
+          { once: true }
+        );
+      });
+    };
+
     return alert.toast();
   };
 
   // Refresh Access token every 30 minutes
   const refreshAccessToken = async (token: string) => {
+    let _reToken = token;
     try {
-      if (token) {
+      if (_reToken) {
+        const payload = new URLSearchParams();
+        payload.append('refresh_token', _reToken);
+        payload.append('grant_type', 'refresh_token');
+
         const tokenRequest = await fetch(`${bakryptURI}/auth/token/`, {
           method: 'post',
           headers: {
-            'content-type': 'application/json',
+            'content-type': 'application/x-www-form-urlencoded',
           },
-          body: JSON.stringify({ refreshToken: token }),
+          body: payload,
         });
 
         if (tokenRequest.ok) {
           const tokenResponse: AccessToken = await tokenRequest.json();
 
           setAccessToken(tokenResponse.access_token);
+          _reToken = tokenResponse.refresh_token;
+          notify('Session extended', 'primary');
         } else {
           const tokenResponse: ErrorResponse = await tokenRequest.json();
-          if (tokenResponse.error_description)
-            notify(tokenResponse.error_description);
-          console.log(tokenResponse.error_description);
+
+          if (tokenResponse.error_description) {
+            const err = `Unable to refresh access token: ${tokenResponse.error_description}`;
+            notify(err, 'danger');
+          } else if (tokenResponse.error) {
+            const err = `Unable to refresh access token: ${tokenResponse.error}`;
+            notify(err, 'danger');
+          }
         }
       }
     } catch (error) {
       const err = `Unable to refresh access token: ${error}`;
-      notify(String(err), 'error');
+      notify(String(err), 'danger');
     }
 
-    setTimeout(refreshAccessToken, 300000); // Every 30 minutes
+    setTimeout(() => {
+      refreshAccessToken(_reToken);
+    }, 300000); // Every 30 minutes
   };
 
   // Upload file to IPFS and return the generated attachment information
   const uploadFile = async (e: CustomEvent) => {
-    const payload: FormData = e.detail.payload;
-    const index: number | string | null = e.detail.index;
+    const { payload } = e.detail;
+    const { index } = e.detail;
     try {
       const createAttachmentRequest = await fetch(`${bakryptURI}/v1/files/`, {
         method: 'POST',
@@ -155,13 +226,9 @@ function BakryptLaunchpad(this: any) {
 
       if (createAttachmentRequest.ok) {
         const jsonResponse: IFile = await createAttachmentRequest.json();
-        console.log(jsonResponse);
-        console.log(index);
         if (Number(index) > -1) {
           const col = collectionRequest as IAsset[];
-          console.log(col);
           const asset: IAsset = col[Number(index)];
-          console.log(asset);
           asset.image = jsonResponse.ipfs;
           asset.mediaType = jsonResponse.mimetype;
         }
@@ -171,11 +238,13 @@ function BakryptLaunchpad(this: any) {
         const jsonResponse: ErrorResponse =
           await createAttachmentRequest.json();
         if (jsonResponse.error_description)
-          notify(jsonResponse.error_description, 'error');
+          notify(jsonResponse.error_description, 'danger');
+        else if (jsonResponse.error) notify(jsonResponse.error, 'danger');
+        else if (jsonResponse.detail) notify(jsonResponse.detail, 'danger');
       }
     } catch (error) {
       console.log(error);
-      notify('Unable to upload file to IPFS server', 'error');
+      notify('Unable to upload file to IPFS server', 'danger');
     }
   };
 
@@ -225,7 +294,9 @@ function BakryptLaunchpad(this: any) {
     }
 
     if (refreshToken) {
-      refreshAccessToken(refreshToken);
+      setTimeout(() => {
+        refreshAccessToken(refreshToken);
+      }, 3000); // Every 30 minutes
     }
 
     if (accessToken) {
@@ -249,12 +320,12 @@ function BakryptLaunchpad(this: any) {
   }, [accessToken]);
 
   return html`
-    <div style="margin-bottom: 2rem">
+    <section class="component-section">
       <sl-tab-group>
         <sl-tab slot="nav" panel="primary">Primary Asset</sl-tab>
 
         <sl-tab-panel name="primary">
-          <div style="text-align: left; padding: 2rem">
+          <div style="text-align: left; padding-top:1rem">
             Token Information
             <sl-divider style="--spacing: 2rem;"></sl-divider>
             <bk-asset-form
@@ -277,6 +348,43 @@ function BakryptLaunchpad(this: any) {
           </div>
         </sl-tab-panel>
       </sl-tab-group>
+    </section>
+
+    <section class="component-section">
+      <sl-details
+        summary="Would you like to set royalties for this collection?"
+      >
+        <sl-input
+          label="Royalties Rate in %"
+          placeholder="Set the percentage rate from 0 - 100%"
+          maxlength="32"
+          value=${royalties.rate}
+          min="0"
+          max="100"
+          type="number"
+          @input=${(e: { path?: Array<any> }) => {
+            if (e.path && e.path.length > 0) {
+              setRoyalties({ ...royalties, rate: e.path[0].value });
+            }
+          }}
+        ></sl-input>
+
+        <sl-input
+          label="Royalties deposit address"
+          placeholder="Set the payment address for the royalties"
+          maxlength="128"
+          value=${royalties.address}
+          type="text"
+          @input=${(e: { path?: Array<any> }) => {
+            if (e.path && e.path.length > 0) {
+              setRoyalties({ ...royalties, address: e.path[0].value });
+            }
+          }}
+        ></sl-input>
+      </sl-details>
+    </section>
+
+    <section class="component-section" style="padding-bottom:4rem">
       <sl-button
         variant="primary"
         @click=${() => {
@@ -287,22 +395,21 @@ function BakryptLaunchpad(this: any) {
       <sl-button variant="primary" outline @click=${addAdditionalAsset}
         >Add Asset</sl-button
       >
-      <div class="alert-container"></div>
+    </section>
 
-      <template id="asset-template">
-        <sl-tab slot="nav" panel="__prefix__" closable
-          >Asset #__prefix__</sl-tab
-        >
+    <div class="alert-container"></div>
 
-        <sl-tab-panel name="__prefix__">
-          <div style="text-align: left; padding: 2rem">
-            Token Information
-            <sl-divider style="--spacing: 2rem;"></sl-divider>
-            <bk-asset-form></bk-asset-form>
-          </div>
-        </sl-tab-panel>
-      </template>
-    </div>
+    <template id="asset-template">
+      <sl-tab slot="nav" panel="__prefix__" closable>Asset #__prefix__</sl-tab>
+
+      <sl-tab-panel name="__prefix__">
+        <div style="text-align: left; padding-top:1rem">
+          Token Information
+          <sl-divider style="--spacing: 2rem;"></sl-divider>
+          <bk-asset-form></bk-asset-form>
+        </div>
+      </sl-tab-panel>
+    </template>
   `;
 }
 
