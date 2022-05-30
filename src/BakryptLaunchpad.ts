@@ -159,13 +159,12 @@ function BakryptLaunchpad(this: any) {
 
   // Add additional tab and panel
   const addAdditionalAsset = () => {
-    const template = this.shadowRoot.querySelector('#asset-template');
+    const template = this.shadowRoot.querySelector('#asset-template').cloneNode(true);
 
     const container = this.shadowRoot.querySelector('sl-tab-group');
     if (container) {
       const indx = (collectionRequest as Array<IAsset>).length;
-
-      template.innerHTML = template.innerHTML.replace(/__prefix__/g, indx);
+      template.innerHTML = template.innerHTML.replace(/__prefix__/g, indx + 1);
       const newNode = template.content.cloneNode(true);
       newNode
         .querySelector('bk-asset-form')
