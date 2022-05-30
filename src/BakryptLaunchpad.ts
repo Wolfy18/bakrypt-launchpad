@@ -2,7 +2,6 @@ import { css } from 'lit';
 import { html, component, useEffect, useState } from 'haunted';
 import shoeStyles from '@shoelace-style/shoelace/dist/themes/light.styles';
 import { style } from './assets/css/main.css';
-import { gridStyles } from './assets/css/grid.css';
 import { useStyles } from './hooks/useStyles';
 import { Tab } from './components/tab';
 import { AssetForm } from './components/asset';
@@ -16,8 +15,9 @@ import '@shoelace-style/shoelace/dist/components/divider/divider';
 import '@shoelace-style/shoelace/dist/components/alert/alert';
 import '@shoelace-style/shoelace/dist/components/icon/icon';
 import '@shoelace-style/shoelace/dist/components/details/details';
-import '@shoelace-style/shoelace/dist/components/button-group/button-group'
+import '@shoelace-style/shoelace/dist/components/button-group/button-group';
 import '@shoelace-style/shoelace/dist/components/badge/badge';
+import '@shoelace-style/shoelace/dist/components/card/card';
 
 const bakryptURI = `http://localhost:8000`;
 
@@ -43,7 +43,41 @@ interface IAssetFile {
   src: string;
   mediaType: string;
 }
+
+interface ITransaction {
+  uuid: string;
+  blockchain: string;
+  status: string;
+  status_description: string;
+  fraud_status: string;
+  issuer_address: string;
+  policy_id: string;
+  invalid_slot: string;
+  cost: string;
+  convenience_fee: string;
+  blockchain_fee: string;
+  is_deleted: boolean;
+  is_minted: boolean;
+  is_voided: boolean;
+  is_resubmitted: boolean;
+  is_refunded: boolean;
+  deposit_address: string;
+  created_on: string;
+  updated_on: string;
+  is_auto_processing: boolean;
+  has_royalties: boolean;
+  royalties_minted: boolean;
+  royalties_minted_on: string;
+  royalties_burned: boolean;
+  royalties_burned_on: string;
+  name: string;
+  image: string;
+  description: string;
+  amount: number;
+}
+
 interface IAsset {
+  uuid?: string;
   blockchain: string;
   name: string;
   asset_name: string;
@@ -55,6 +89,7 @@ interface IAsset {
   amount: 1;
   royalties?: string;
   royalties_rate?: string;
+  transaction?: string | ITransaction;
 }
 
 interface IFile {
@@ -71,7 +106,6 @@ interface IFile {
 
 function BakryptLaunchpad(this: any) {
   useStyles(this, [
-    gridStyles,
     shoeStyles,
     style,
     css`
@@ -116,6 +150,7 @@ function BakryptLaunchpad(this: any) {
     rate: '',
     address: '',
   });
+  const [transaction, setTransaction] = useState();
 
   // Escape html string
   const escapeHtml = (text: string) => {
@@ -263,6 +298,79 @@ function BakryptLaunchpad(this: any) {
     }
   };
 
+  // Retrieve transaction information
+  const retrieveTransaction = async (uuid: string) => {
+    try {
+      const retrieveTransactionRequest = await fetch(
+        `${bakryptURI}/v1/transactions/${uuid}`,
+        {
+          method: 'GET',
+          headers: {
+            'content-type': 'application/json',
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
+      );
+
+      if (retrieveTransactionRequest.ok) {
+        const jsonResponse: ITransaction =
+          await retrieveTransactionRequest.json();
+        setTransaction(jsonResponse);
+      } else {
+        const jsonResponse: ErrorResponse =
+          await retrieveTransactionRequest.json();
+        if (jsonResponse.error_description)
+          notify(jsonResponse.error_description, 'danger');
+        else if (jsonResponse.error) notify(jsonResponse.error, 'danger');
+        else if (jsonResponse.detail) notify(jsonResponse.detail, 'danger');
+      }
+    } catch (error) {
+      console.log(error);
+      notify('Unable to retrieve transaction. Internal Server Error', 'danger');
+    }
+  };
+
+  // Submit collection to the assets API
+  const submitRequest = async (collection: IAsset[]) => {
+    try {
+      const submitCollectionRequest = await fetch(`${bakryptURI}/v1/assets/`, {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+          Authorization: `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify(collection),
+      });
+
+      if (submitCollectionRequest.ok) {
+        const jsonResponse: IAsset[] | IAsset =
+          await submitCollectionRequest.json();
+
+        notify('Request was submitted', 'success');
+
+        if (Array.isArray(jsonResponse)) {
+          const prAsset = jsonResponse[0];
+          if (prAsset.transaction) {
+            // Retrieve Transaction Data
+            retrieveTransaction(String(prAsset.transaction));
+          }
+        } else if (jsonResponse.transaction) {
+          setTransaction(jsonResponse.transaction);
+        }
+      } else {
+        const jsonResponse: ErrorResponse =
+          await submitCollectionRequest.json();
+        if (jsonResponse.error_description)
+          notify(jsonResponse.error_description, 'danger');
+        else if (jsonResponse.error) notify(jsonResponse.error, 'danger');
+        else if (jsonResponse.detail) notify(jsonResponse.detail, 'danger');
+      }
+    } catch (error) {
+      console.log(error);
+      notify('Unable to submit request. Internal Server Error', 'danger');
+    }
+  };
+
   // Add additional tab and panel
   const addAdditionalAsset = () => {
     const template = this.shadowRoot
@@ -298,6 +406,13 @@ function BakryptLaunchpad(this: any) {
     }
   };
 
+  const viewTransaction = () => {
+    const dialog = this.shadowRoot.querySelector('sl-dialog');
+    if (dialog) {
+      dialog.show();
+    }
+  };
+
   useEffect(async () => {
     const _access = this.getAttribute('access-token');
     if (_access) {
@@ -322,14 +437,13 @@ function BakryptLaunchpad(this: any) {
   }, [accessToken]);
 
   return html`
+    <!-- Tab groupand panel section -->
     <section class="component-section">
       <sl-tab-group>
         <sl-tab slot="nav" panel="primary">Primary Asset</sl-tab>
 
         <sl-tab-panel name="primary">
           <div style="text-align: left; padding-top:1rem">
-            Token Information
-            <sl-divider style="--spacing: 2rem;"></sl-divider>
             <bk-asset-form
               .index=${0}
               @upload-file=${uploadFile}
@@ -350,6 +464,7 @@ function BakryptLaunchpad(this: any) {
       </sl-tab-group>
     </section>
 
+    <!-- Royalties section -->
     <section class="component-section">
       Royalties Information
       <sl-divider style="--spacing: 2rem;"></sl-divider>
@@ -386,6 +501,7 @@ function BakryptLaunchpad(this: any) {
       </sl-details>
     </section>
 
+    <!-- Button section -->
     <section class="component-section" style="padding-bottom:4rem">
       <sl-button
         variant="primary"
@@ -410,24 +526,42 @@ function BakryptLaunchpad(this: any) {
             col[0] = { ...prAsset };
           }
 
-          console.log(col);
+          submitRequest(col);
         }}
         >Submit request</sl-button
       >
       <sl-button variant="primary" outline @click=${addAdditionalAsset}
         >Add Asset</sl-button
       >
+
+      ${transaction
+        ? html` <sl-button variant="success" outline @click=${viewTransaction}
+            >Show Transaction Invoice</sl-button
+          >`
+        : null}
     </section>
 
+    <!-- Transaction Dialog -->
+    ${transaction
+      ? html`<sl-dialog
+          label="Dialog"
+          class="dialog-width"
+          style="--width: 50vw;"
+        >
+          Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+          <sl-button slot="footer" variant="primary" open>Close</sl-button>
+        </sl-dialog>`
+      : null}
+
+    <!-- Alert container -->
     <div class="alert-container"></div>
 
+    <!-- Asset template -->
     <template id="asset-template">
       <sl-tab slot="nav" panel="__prefix__" closable>Asset #__prefix__</sl-tab>
 
       <sl-tab-panel name="__prefix__">
         <div style="text-align: left; padding-top:1rem">
-          Token Information
-          <sl-divider style="--spacing: 2rem;"></sl-divider>
           <bk-asset-form></bk-asset-form>
         </div>
       </sl-tab-panel>

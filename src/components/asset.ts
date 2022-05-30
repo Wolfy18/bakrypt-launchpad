@@ -80,7 +80,37 @@ function AssetForm(this: any, { index }: { index: number | string | null }) {
   }, [asset]);
 
   return html`
-    <sl-badge variant=${tokenType.variant}>${tokenType.type}</sl-badge>
+    <sl-input
+      style="margin: 0"
+      placeholder="Token Name"
+      size="large"
+      .value=${asset.asset_name.length < 1 ? asset.name : asset.asset_name}
+      disabled
+    ></sl-input>
+    <sl-badge style="margin-top:1rem" variant=${tokenType.variant}
+      >${tokenType.type}</sl-badge
+    >
+    <br />
+    <sl-card class="card-overview" style="text-align:center; margin-top:2rem">
+      <img
+        slot="image"
+        src=${asset.image.length > 0
+          ? `${asset.image}`.replace(
+              'ipfs://',
+              'https://ipfs.infura-ipfs.io/ipfs/'
+            )
+          : ''}
+        alt="Token cover"
+      />
+
+      <strong>${asset.name}</strong><br /><br />
+      ${asset.description.length > 0
+        ? html` <small>Description</small> <br />
+            ${asset.description}<br />`
+        : null}
+    </sl-card>
+
+    <sl-divider style="--spacing: 2rem;"></sl-divider>
     <div style="margin-top:2rem"></div>
     <sl-input
       label="Name*"
@@ -148,10 +178,14 @@ function AssetForm(this: any, { index }: { index: number | string | null }) {
       }}
     ></sl-input>
 
-    <sl-details summary="Do you want to upload a file to IPFS instead?">
-      Select a file to upload and whenevr you're ready press the upload button
-      to start pushing into IPFS.
+    <sl-details
+      summary="Do you want to upload a file to IPFS and use the attachment instead?"
+    >
+      Select a file to upload. When you're ready, press the upload button to
+      start pushing into IPFS.
+      <br /><br />
       <input type="file" id="ipfs-fileinput" />
+
       <sl-button-group>
         <sl-button variant="primary" @click=${requestUpload}
           >Upload file to IPFS</sl-button
@@ -174,15 +208,9 @@ function AssetForm(this: any, { index }: { index: number | string | null }) {
     >
     </sl-textarea>
 
-    <sl-details summary="Additional Files">
-      Select a file to upload and whenevr you're ready press the upload button
-      to start pushing into IPFS.
-    </sl-details>
+    <sl-details summary="Additional Files"> Coming Soon on this interface</sl-details>
 
-    <sl-details summary="More Attributes">
-      Select a file to upload and whenevr you're ready press the upload button
-      to start pushing into IPFS.
-    </sl-details>
+    <sl-details summary="More Attributes"> Coming Soon on this interface</sl-details>
   `;
 }
 export { AssetForm };
