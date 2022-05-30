@@ -16,7 +16,8 @@ import '@shoelace-style/shoelace/dist/components/divider/divider';
 import '@shoelace-style/shoelace/dist/components/alert/alert';
 import '@shoelace-style/shoelace/dist/components/icon/icon';
 import '@shoelace-style/shoelace/dist/components/details/details';
-import '@shoelace-style/shoelace/dist/components/button-group/button-group';
+import '@shoelace-style/shoelace/dist/components/button-group/button-group'
+import '@shoelace-style/shoelace/dist/components/badge/badge';
 
 const bakryptURI = `http://localhost:8000`;
 
@@ -52,6 +53,8 @@ interface IAsset {
   files: Array<IAssetFile>;
   attrs: object;
   amount: 1;
+  royalties?: string;
+  royalties_rate?: string;
 }
 
 interface IFile {
@@ -89,14 +92,26 @@ function BakryptLaunchpad(this: any) {
       }
 
       :host .component-section {
-        padding:0 2rem;
+        padding: 0 2rem;
       }
     `,
   ]);
 
   const [accessToken, setAccessToken] = useState('');
   const [refreshToken, setRefreshToken] = useState('');
-  const [collectionRequest, setCollectionRequest] = useState();
+  const [collectionRequest, setCollectionRequest] = useState([
+    {
+      blockchain: 'ada',
+      name: '',
+      asset_name: '',
+      image: '',
+      mediaType: '',
+      description: '',
+      files: [],
+      attrs: {},
+      amount: 1,
+    } as IAsset,
+  ]);
   const [royalties, setRoyalties] = useState({
     rate: '',
     address: '',
@@ -278,6 +293,7 @@ function BakryptLaunchpad(this: any) {
         .querySelector('bk-asset-form')
         .addEventListener('upload-file', uploadFile);
 
+      // newTab.active = true;
       container.appendChild(newNode);
     }
   };
@@ -301,21 +317,7 @@ function BakryptLaunchpad(this: any) {
 
     if (accessToken) {
       // Do something over here
-      console.log('This ran! how many times!');
       console.log(accessToken);
-      setCollectionRequest([
-        {
-          blockchain: 'ada',
-          name: '',
-          asset_name: '',
-          image: '',
-          mediaType: '',
-          description: '',
-          files: [],
-          attrs: '',
-          amount: 1,
-        },
-      ]);
     }
   }, [accessToken]);
 
@@ -339,8 +341,6 @@ function BakryptLaunchpad(this: any) {
                   if (col && col.length > 0) {
                     col[0] = asset;
                     setCollectionRequest(col);
-                  } else {
-                    setCollectionRequest([col]);
                   }
                 }
               }}
@@ -351,6 +351,8 @@ function BakryptLaunchpad(this: any) {
     </section>
 
     <section class="component-section">
+      Royalties Information
+      <sl-divider style="--spacing: 2rem;"></sl-divider>
       <sl-details
         summary="Would you like to set royalties for this collection?"
       >
@@ -388,7 +390,27 @@ function BakryptLaunchpad(this: any) {
       <sl-button
         variant="primary"
         @click=${() => {
-          console.log(collectionRequest);
+          const col: IAsset[] = collectionRequest;
+          if (
+            col &&
+            royalties.rate.length > 0 &&
+            royalties.address.length > 0
+          ) {
+            const prAsset = {
+              ...col[0],
+              royalties: royalties.address,
+              royalties_rate: royalties.rate,
+            };
+
+            col[0] = prAsset;
+          } else {
+            const prAsset = col[0];
+            delete prAsset.royalties;
+            delete prAsset.royalties_rate;
+            col[0] = { ...prAsset };
+          }
+
+          console.log(col);
         }}
         >Submit request</sl-button
       >

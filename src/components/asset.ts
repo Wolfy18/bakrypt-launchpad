@@ -2,7 +2,7 @@ import { css } from 'lit';
 import { html, component, useState, useEffect } from 'haunted';
 import { useStyles } from '../hooks/useStyles';
 
-function AssetForm(this: any, {index}: {index:number | string | null}) {
+function AssetForm(this: any, { index }: { index: number | string | null }) {
   useStyles(this, [
     css`
       :host sl-input,
@@ -18,6 +18,10 @@ function AssetForm(this: any, {index}: {index:number | string | null}) {
     `,
   ]);
 
+  const [tokenType, setTokenType] = useState({
+    type: 'NFT',
+    variant: 'primary',
+  });
   const [asset, setAsset] = useState({
     blockchain: 'ada',
     name: '',
@@ -65,9 +69,19 @@ function AssetForm(this: any, {index}: {index:number | string | null}) {
 
   useEffect(() => {
     token();
+
+    if (asset) {
+      if (asset.amount === 1) {
+        setTokenType({ type: 'NFT', variant: 'primary' });
+      } else if (asset.amount > 1) {
+        setTokenType({ type: 'Fungible Token', variant: 'neutral' });
+      }
+    }
   }, [asset]);
 
   return html`
+    <sl-badge variant=${tokenType.variant}>${tokenType.type}</sl-badge>
+    <div style="margin-top:2rem"></div>
     <sl-input
       label="Name*"
       placeholder="What would you like people to call you?"
