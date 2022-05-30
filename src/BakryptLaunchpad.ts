@@ -54,12 +54,29 @@ interface IAsset {
 }
 
 function BakryptLaunchpad(this: any) {
-  // Escape html
+  useStyles(this, [
+    gridStyles,
+    shoeStyles,
+    style,
+    css`
+      :host {
+        font-family: 'arial';
+        font-weight: 400;
+      }
+    `,
+  ]);
+
+  const [accessToken, setAccessToken] = useState('');
+  const [refreshToken, setRefreshToken] = useState('');
+  const [collectionRequest, setCollectionRequest] = useState();
+
+  // Escape html string
   const escapeHtml = (text: string) => {
     const div = document.createElement('div');
     div.textContent = text;
     return div.innerHTML;
   };
+
   // Custom function to emit toast notifications
   const notify = (
     message: string,
@@ -80,23 +97,7 @@ function BakryptLaunchpad(this: any) {
     return alert.toast();
   };
 
-  useStyles(this, [
-    gridStyles,
-    shoeStyles,
-    style,
-    css`
-      :host {
-        font-family: 'arial';
-        font-weight: 400;
-      }
-    `,
-  ]);
-
-  const [accessToken, setAccessToken] = useState('');
-  const [refreshToken, setRefreshToken] = useState('');
-  const [collectionRequest, setCollectionRequest] = useState();
-  const [assetCount, setAssetCount] = useState(0);
-
+  // Refresh Access token every 30 minutes
   const refreshAccessToken = async (token: string) => {
     try {
       if (token) {
@@ -127,18 +128,10 @@ function BakryptLaunchpad(this: any) {
     setTimeout(refreshAccessToken, 300000); // Every 30 minutes
   };
 
-  const addAdditionalAsset = () => {
-    const template = this.shadowRoot.querySelector('#asset-template');
-
-    const container = this.shadowRoot.querySelector('sl-tab-group');
-    if (container) {
-      container.appendChild(template.content.cloneNode(true));
-    }
-  };
-
+  // Upload file to IPFS and return the generated attachment information
   const uploadFile = async (e: CustomEvent) => {
     const payload: FormData = e.detail.payload;
-    console.log(payload, ' <=payload ===========');
+
     try {
       const createAttachmentRequest = await fetch(`${bakryptURI}/v1/files/`, {
         method: 'POST',
@@ -164,6 +157,35 @@ function BakryptLaunchpad(this: any) {
     }
   };
 
+  // Add additional tab and panel
+  const addAdditionalAsset = () => {
+    const template = this.shadowRoot.querySelector('#asset-template');
+
+    const container = this.shadowRoot.querySelector('sl-tab-group');
+    if (container) {
+      const indx = (collectionRequest as Array<IAsset>).length;
+
+      template.innerHTML = template.innerHTML.replace(/__prefix__/g, indx);
+      const newNode = template.content.cloneNode(true);
+      newNode
+        .querySelector('bk-asset-form')
+        .addEventListener('token', (e: CustomEvent) => {
+          if (e && e.detail && e.detail.token) {
+            const asset: IAsset = e.detail.token;
+            const col = collectionRequest as Array<IAsset>;
+            col[indx] = asset;
+            setCollectionRequest(col);
+          }
+        });
+
+      newNode
+        .querySelector('bk-asset-form')
+        .addEventListener('upload-file', uploadFile);
+
+      container.appendChild(newNode);
+    }
+  };
+
   useEffect(async () => {
     const _access = this.getAttribute('access-token');
     if (_access) {
@@ -181,8 +203,8 @@ function BakryptLaunchpad(this: any) {
 
     if (accessToken) {
       // Do something over here
-      console.log("This ran! how many times!")
-      console.log(accessToken)
+      console.log('This ran! how many times!');
+      console.log(accessToken);
     }
   }, [accessToken]);
 
@@ -200,16 +222,27 @@ function BakryptLaunchpad(this: any) {
               @token=${(e: CustomEvent) => {
                 if (e && e.detail && e.detail.token) {
                   const asset: IAsset = e.detail.token;
+                  const col = collectionRequest as IAsset[];
 
-                  // Set primary asset
-                  setCollectionRequest([asset]);
+                  if (col && col.length > 0) {
+                    col[0] = asset;
+                    setCollectionRequest(col);
+                  } else {
+                    setCollectionRequest([col]);
+                  }
                 }
               }}
             ></bk-asset-form>
           </div>
         </sl-tab-panel>
       </sl-tab-group>
-      <sl-button variant="primary" @click=${() => {console.log(collectionRequest)}}>Submit request</sl-button>
+      <sl-button
+        variant="primary"
+        @click=${() => {
+          console.log(collectionRequest);
+        }}
+        >Submit request</sl-button
+      >
       <sl-button variant="primary" outline @click=${addAdditionalAsset}
         >Add Asset</sl-button
       >
