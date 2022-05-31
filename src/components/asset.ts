@@ -17,7 +17,7 @@ function AssetForm(this: any, { index }: { index: number | string | null }) {
       }
 
       .skeleton-overview header {
-        min-width: 400px;
+        width: 100%;
         display: flex;
         align-items: center;
         margin-bottom: 1rem;
@@ -34,19 +34,24 @@ function AssetForm(this: any, { index }: { index: number | string | null }) {
 
       .skeleton-overview sl-skeleton:nth-child(1) {
         float: left;
-        width: 100%;
+        width: 95%;
         height: 5rem;
         margin-right: 1rem;
         vertical-align: middle;
       }
       .skeleton-overview sl-skeleton:nth-child(4) {
-        width: 95%;
+        width: 85%;
       }
-
+      .skeleton-overview sl-skeleton:nth-child(5) {
+        width: 75%;
+      }
       :host .container.asset {
-        display:grid;
+        display: grid;
         grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-        grid-gap: 1rem;
+        grid-gap: 2rem;
+      }
+      .skeleton-effects {
+        font-size: var(--sl-font-size-small);
       }
     `,
   ]);
@@ -113,7 +118,7 @@ function AssetForm(this: any, { index }: { index: number | string | null }) {
   }, [asset]);
 
   return html`
-    <div class="container asset">
+    <div class="container asset" >
       <section>
         <sl-input
           style="margin: 0"
@@ -129,7 +134,7 @@ function AssetForm(this: any, { index }: { index: number | string | null }) {
         <div style="margin-top:2rem"></div>
         <sl-input
           label="Name*"
-          placeholder="What would you like people to call you?"
+          placeholder="What would you like the token to be named?"
           required
           maxlength="64"
           value=${asset.name}
@@ -232,35 +237,35 @@ function AssetForm(this: any, { index }: { index: number | string | null }) {
         >
       </section>
       <section>
-        <sl-card
-          class="card-overview"
-          style="text-align:center; margin-top:2rem"
-        >
-          ${asset.image.length > 0
-            ? html` <img
-                slot="image"
-                src=${asset.image.length > 0
-                  ? `${asset.image}`.replace(
-                      'ipfs://',
-                      'https://ipfs.infura-ipfs.io/ipfs/'
-                    )
-                  : ''}
-                alt="Token cover"
-              />`
-            : html` <div class="skeleton-overview">
-                <header>
-                  <sl-skeleton></sl-skeleton>
-                </header>
-                <sl-skeleton></sl-skeleton>
-                <sl-skeleton></sl-skeleton>
-                <sl-skeleton></sl-skeleton>
-              </div>`}
+        <sl-card class="card-overview" style="text-align:center; width: 100%">
 
-          <strong>${asset.name}</strong><br /><br />
-          ${asset.description.length > 0
-            ? html` <small>Description</small> <br />
-                ${asset.description}<br />`
-            : null}
+
+          <div class="skeleton-overview">
+            ${asset.image.length > 0
+              ? html`<img
+                  slot="image"
+                  src=${asset.image.length > 0
+                    ? `${asset.image}`.replace(
+                        'ipfs://',
+                        'https://ipfs.infura-ipfs.io/ipfs/'
+                      )
+                    : ''}
+                  alt="Token cover"
+                />`
+              : html` <header>
+                  <sl-skeleton effect="pulse"></sl-skeleton>
+                </header>`}
+            ${asset.name.length > 0
+              ? html` <strong>${asset.name}</strong><br /><br />
+                  ${asset.description.length > 0
+                    ? html` <small>Description</small> <br />
+                        ${asset.description}<br />`
+                    : null}`
+              : html` <sl-skeleton effect="pulse"></sl-skeleton>
+                  <sl-skeleton effect="pulse"></sl-skeleton>
+                  <sl-skeleton effect="pulse"></sl-skeleton>
+                  <sl-skeleton effect="pulse"></sl-skeleton>`}
+          </div>
         </sl-card>
       </section>
     </div>

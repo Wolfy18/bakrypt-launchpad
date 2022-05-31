@@ -87,7 +87,7 @@ interface IAsset {
   description: string;
   files: Array<IAssetFile>;
   attrs: object;
-  amount: 1;
+  amount: number;
   royalties?: string;
   royalties_rate?: string;
   transaction?: string | ITransaction;
@@ -128,7 +128,8 @@ function BakryptLaunchpad(this: any) {
       }
 
       :host .component-section {
-        padding: 0 2rem;
+        padding-left: 0.85rem;
+        padding-right: 0.85rem;
       }
     `,
   ]);
@@ -136,6 +137,7 @@ function BakryptLaunchpad(this: any) {
   const [bakryptURI, setBakryptUri] = useState('');
   const [accessToken, setAccessToken] = useState('');
   const [refreshToken, setRefreshToken] = useState('');
+  const [transactionStatusVariant, setTransactionStatusVariant] = useState('neutral');
   const [collectionRequest, setCollectionRequest] = useState([
     {
       blockchain: 'ada',
@@ -319,6 +321,30 @@ function BakryptLaunchpad(this: any) {
         const jsonResponse: ITransaction =
           await retrieveTransactionRequest.json();
         setTransaction(jsonResponse);
+
+        let _variant = 'primary';
+
+        if (
+          ['error', 'rejected', 'canceled'].includes(
+            (<ITransaction>jsonResponse).status
+          )
+        ) {
+          _variant = 'danger';
+        } else if (
+          ['burning', 'royalties', 'refund'].includes(
+            (<ITransaction>jsonResponse).status
+          )
+        ) {
+          _variant = 'warning';
+        } else if (
+          ['confirmed', 'stand-by'].includes(
+            (<ITransaction>jsonResponse).status
+          )
+        ) {
+          _variant = 'success';
+        }
+
+        setTransactionStatusVariant(_variant);
       } else {
         const jsonResponse: ErrorResponse =
           await retrieveTransactionRequest.json();
@@ -335,6 +361,7 @@ function BakryptLaunchpad(this: any) {
 
   // Submit collection to the assets API
   const submitRequest = async (collection: IAsset[]) => {
+    let showInvoice = false;
     try {
       const submitCollectionRequest = await fetch(`${bakryptURI}/v1/assets/`, {
         method: 'POST',
@@ -357,9 +384,14 @@ function BakryptLaunchpad(this: any) {
             // Retrieve Transaction Data
             retrieveTransaction(String(prAsset.transaction));
           }
-        } else if (jsonResponse.transaction) {
+        } else if (
+          jsonResponse.transaction &&
+          (<ITransaction>jsonResponse.transaction).uuid
+        ) {
           setTransaction(jsonResponse.transaction);
         }
+
+        showInvoice = true;
       } else {
         const jsonResponse: ErrorResponse =
           await submitCollectionRequest.json();
@@ -369,8 +401,12 @@ function BakryptLaunchpad(this: any) {
         else if (jsonResponse.detail) notify(jsonResponse.detail, 'danger');
       }
     } catch (error) {
-      console.log(error);
-      notify('Unable to submit request. Internal Server Error', 'danger');
+      notify(`Unable to submit request. Error: ${error}`, 'danger');
+    }
+
+    const invDialog: any = this.shadowRoot.querySelector('sl-dialog');
+    if (invDialog && showInvoice) {
+      invDialog.show();
     }
   };
 
@@ -417,9 +453,10 @@ function BakryptLaunchpad(this: any) {
   };
 
   useEffect(async () => {
-
     const testnet = this.getAttribute('testnet');
-    setBakryptUri(testnet ? 'https://testnet.bakrypt.io' : 'https://bakrypt.io');
+    setBakryptUri(
+      testnet ? 'https://testnet.bakrypt.io' : 'https://bakrypt.io'
+    );
 
     const _access = this.getAttribute('access-token');
     if (_access) {
@@ -472,7 +509,7 @@ function BakryptLaunchpad(this: any) {
     </section>
 
     <!-- Royalties section -->
-    <section class="component-section">
+    <section class="component-section" style="margin-top:1rem">
       Royalties Information
       <sl-divider style="--spacing: 2rem;"></sl-divider>
       <sl-details
@@ -509,7 +546,7 @@ function BakryptLaunchpad(this: any) {
     </section>
 
     <!-- Button section -->
-    <section class="component-section" style="padding-bottom:4rem">
+    <section class="component-section" style="padding-bottom:4rem;">
       ${transaction
         ? null
         : html` <sl-button
@@ -562,40 +599,19 @@ function BakryptLaunchpad(this: any) {
       ></sl-qr-code>
       <sl-input
         maxlength="255"
-        clearable
+        
         label="Deposit Address"
         value=${transaction ? (<ITransaction>transaction).deposit_address : ''}
-        disabled
+        readonly
       ></sl-input>
-      <sl-badge
-        style="margin-top:1rem"
-        variant=${transaction
-          ? String(() => {
-              let _variant = 'primary';
-
-              if (
-                ['error', 'rejected', 'canceled'].includes(
-                  (<ITransaction>transaction).status
-                )
-              ) {
-                _variant = 'danger';
-              } else if (
-                ['burning', 'royalties', 'refund'].includes(
-                  (<ITransaction>transaction).status
-                )
-              ) {
-                _variant = 'warning';
-              } else if (
-                ['confirmed', 'stand-by'].includes(
-                  (<ITransaction>transaction).status
-                )
-              ) {
-                _variant = 'success';
-              }
-
-              return _variant;
-            })
-          : 'neutral'}
+      <sl-input
+        maxlength="255"
+        type="number"
+        label="Deposit Amount Required"
+        value=${transaction ? (<ITransaction>transaction).cost : ''}
+        readonly
+      ></sl-input>
+      <sl-badge style="margin-top:1rem; margin-bottom: 2rem" variant=${transactionStatusVariant}
         >${transaction ? (<ITransaction>transaction).status : ''}</sl-badge
       >
       <sl-textarea
@@ -603,7 +619,7 @@ function BakryptLaunchpad(this: any) {
         value=${transaction
           ? (<ITransaction>transaction).status_description
           : ''}
-        disabled
+        readonly
       >
       </sl-textarea>
 
@@ -614,7 +630,9 @@ function BakryptLaunchpad(this: any) {
           <sl-icon-button name="gear" label="Settings"></sl-icon-button>
         </div>
 
-        DO NOT DEPOSIT FROM A EXCHANGE! We will send all the tokens and change to the payor's address; meaning that the 
+        DO NOT DEPOSIT FROM A EXCHANGE! We will send all the tokens and change
+        to the payor's address; meaning that the payment must be done from a
+        wallet that you own.
       </sl-card>
 
       <br />
