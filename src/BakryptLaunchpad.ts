@@ -18,8 +18,9 @@ import '@shoelace-style/shoelace/dist/components/details/details';
 import '@shoelace-style/shoelace/dist/components/button-group/button-group';
 import '@shoelace-style/shoelace/dist/components/badge/badge';
 import '@shoelace-style/shoelace/dist/components/card/card';
-
-const bakryptURI = `http://localhost:8000`;
+import '@shoelace-style/shoelace/dist/components/dialog/dialog';
+import '@shoelace-style/shoelace/dist/components/qr-code/qr-code';
+import '@shoelace-style/shoelace/dist/components/skeleton/skeleton';
 
 window.customElements.define('bk-tab', component(Tab));
 window.customElements.define('bk-asset-form', component(AssetForm));
@@ -117,7 +118,8 @@ function BakryptLaunchpad(this: any) {
       :host sl-input,
       :host input,
       :host sl-textarea,
-      :host sl-details {
+      :host sl-details,
+      :host sl-qr-code {
         margin-bottom: 2rem;
       }
 
@@ -131,6 +133,7 @@ function BakryptLaunchpad(this: any) {
     `,
   ]);
 
+  const [bakryptURI, setBakryptUri] = useState('');
   const [accessToken, setAccessToken] = useState('');
   const [refreshToken, setRefreshToken] = useState('');
   const [collectionRequest, setCollectionRequest] = useState([
@@ -414,6 +417,10 @@ function BakryptLaunchpad(this: any) {
   };
 
   useEffect(async () => {
+
+    const testnet = this.getAttribute('testnet');
+    setBakryptUri(testnet ? 'https://testnet.bakrypt.io' : 'https://bakrypt.io');
+
     const _access = this.getAttribute('access-token');
     if (_access) {
       setAccessToken(_access);
@@ -503,38 +510,38 @@ function BakryptLaunchpad(this: any) {
 
     <!-- Button section -->
     <section class="component-section" style="padding-bottom:4rem">
-      <sl-button
-        variant="primary"
-        @click=${() => {
-          const col: IAsset[] = collectionRequest;
-          if (
-            col &&
-            royalties.rate.length > 0 &&
-            royalties.address.length > 0
-          ) {
-            const prAsset = {
-              ...col[0],
-              royalties: royalties.address,
-              royalties_rate: royalties.rate,
-            };
-
-            col[0] = prAsset;
-          } else {
-            const prAsset = col[0];
-            delete prAsset.royalties;
-            delete prAsset.royalties_rate;
-            col[0] = { ...prAsset };
-          }
-
-          submitRequest(col);
-        }}
-        >Submit request</sl-button
-      >
-      <sl-button variant="primary" outline @click=${addAdditionalAsset}
-        >Add Asset</sl-button
-      >
-
       ${transaction
+        ? null
+        : html` <sl-button
+              variant="primary"
+              @click=${() => {
+                const col: IAsset[] = collectionRequest;
+                if (
+                  col &&
+                  royalties.rate.length > 0 &&
+                  royalties.address.length > 0
+                ) {
+                  const prAsset = {
+                    ...col[0],
+                    royalties: royalties.address,
+                    royalties_rate: royalties.rate,
+                  };
+
+                  col[0] = prAsset;
+                } else {
+                  const prAsset = col[0];
+                  delete prAsset.royalties;
+                  delete prAsset.royalties_rate;
+                  col[0] = { ...prAsset };
+                }
+
+                submitRequest(col);
+              }}
+              >Submit request</sl-button
+            ><sl-button variant="primary" outline @click=${addAdditionalAsset}
+              >Add Asset</sl-button
+            >`}
+      ${transaction || true
         ? html` <sl-button variant="success" outline @click=${viewTransaction}
             >Show Transaction Invoice</sl-button
           >`
@@ -542,16 +549,77 @@ function BakryptLaunchpad(this: any) {
     </section>
 
     <!-- Transaction Dialog -->
-    ${transaction
-      ? html`<sl-dialog
-          label="Dialog"
-          class="dialog-width"
-          style="--width: 50vw;"
-        >
-          Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-          <sl-button slot="footer" variant="primary" open>Close</sl-button>
-        </sl-dialog>`
-      : null}
+    <sl-dialog
+      label="Transaction Invoice"
+      class="dialog-width"
+      style="--width: 50vw;"
+    >
+      <sl-qr-code
+        value=${transaction
+          ? (<ITransaction>transaction).deposit_address
+          : 'https://bakrypt.io'}
+        label="Scan this code for the deposit_address!"
+      ></sl-qr-code>
+      <sl-input
+        maxlength="255"
+        clearable
+        label="Deposit Address"
+        value=${transaction ? (<ITransaction>transaction).deposit_address : ''}
+        disabled
+      ></sl-input>
+      <sl-badge
+        style="margin-top:1rem"
+        variant=${transaction
+          ? String(() => {
+              let _variant = 'primary';
+
+              if (
+                ['error', 'rejected', 'canceled'].includes(
+                  (<ITransaction>transaction).status
+                )
+              ) {
+                _variant = 'danger';
+              } else if (
+                ['burning', 'royalties', 'refund'].includes(
+                  (<ITransaction>transaction).status
+                )
+              ) {
+                _variant = 'warning';
+              } else if (
+                ['confirmed', 'stand-by'].includes(
+                  (<ITransaction>transaction).status
+                )
+              ) {
+                _variant = 'success';
+              }
+
+              return _variant;
+            })
+          : 'neutral'}
+        >${transaction ? (<ITransaction>transaction).status : ''}</sl-badge
+      >
+      <sl-textarea
+        label="Status Description"
+        value=${transaction
+          ? (<ITransaction>transaction).status_description
+          : ''}
+        disabled
+      >
+      </sl-textarea>
+
+      <sl-card class="card-header">
+        <div slot="header">
+          Attention! Please read this message
+
+          <sl-icon-button name="gear" label="Settings"></sl-icon-button>
+        </div>
+
+        DO NOT DEPOSIT FROM A EXCHANGE! We will send all the tokens and change to the payor's address; meaning that the 
+      </sl-card>
+
+      <br />
+      <sl-button slot="footer" variant="primary">Close</sl-button>
+    </sl-dialog>
 
     <!-- Alert container -->
     <div class="alert-container"></div>

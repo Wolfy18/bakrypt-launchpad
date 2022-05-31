@@ -15,6 +15,39 @@ function AssetForm(this: any, { index }: { index: number | string | null }) {
       :host .form-control__help-text {
         margin-top: 0.5rem;
       }
+
+      .skeleton-overview header {
+        min-width: 400px;
+        display: flex;
+        align-items: center;
+        margin-bottom: 1rem;
+      }
+
+      .skeleton-overview header sl-skeleton:last-child {
+        flex: 0 0 auto;
+        width: 100%;
+      }
+
+      .skeleton-overview sl-skeleton {
+        margin-bottom: 1rem;
+      }
+
+      .skeleton-overview sl-skeleton:nth-child(1) {
+        float: left;
+        width: 100%;
+        height: 5rem;
+        margin-right: 1rem;
+        vertical-align: middle;
+      }
+      .skeleton-overview sl-skeleton:nth-child(4) {
+        width: 95%;
+      }
+
+      :host .container.asset {
+        display:grid;
+        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+        grid-gap: 1rem;
+      }
     `,
   ]);
 
@@ -80,137 +113,157 @@ function AssetForm(this: any, { index }: { index: number | string | null }) {
   }, [asset]);
 
   return html`
-    <sl-input
-      style="margin: 0"
-      placeholder="Token Name"
-      size="large"
-      .value=${asset.asset_name.length < 1 ? asset.name : asset.asset_name}
-      disabled
-    ></sl-input>
-    <sl-badge style="margin-top:1rem" variant=${tokenType.variant}
-      >${tokenType.type}</sl-badge
-    >
-    <br />
-    <sl-card class="card-overview" style="text-align:center; margin-top:2rem">
-      <img
-        slot="image"
-        src=${asset.image.length > 0
-          ? `${asset.image}`.replace(
-              'ipfs://',
-              'https://ipfs.infura-ipfs.io/ipfs/'
-            )
-          : ''}
-        alt="Token cover"
-      />
-
-      <strong>${asset.name}</strong><br /><br />
-      ${asset.description.length > 0
-        ? html` <small>Description</small> <br />
-            ${asset.description}<br />`
-        : null}
-    </sl-card>
-
-    <sl-divider style="--spacing: 2rem;"></sl-divider>
-    <div style="margin-top:2rem"></div>
-    <sl-input
-      label="Name*"
-      placeholder="What would you like people to call you?"
-      required
-      maxlength="64"
-      value=${asset.name}
-      @input=${(e: { path?: Array<any> }) => {
-        if (e.path && e.path.length > 0) {
-          setAsset({ ...asset, name: e.path[0].value });
-        }
-      }}
-    ></sl-input>
-
-    <sl-details summary="Do you want to specify a different token name?">
-      <sl-input
-        label="Asset Name"
-        placeholder="Set the asset name. Only numbers and letters. Up to 32 chars"
-        maxlength="32"
-        value=${asset.asset_name}
-        type="text"
-        @input=${(e: { path?: Array<any> }) => {
-          if (e.path && e.path.length > 0) {
-            setAsset({ ...asset, asset_name: e.path[0].value });
-          }
-        }}
-      ></sl-input>
-    </sl-details>
-
-    <sl-input
-      label="Amount*"
-      type="number"
-      placeholder="Number of copies for this token. 1 for NFTs and more than 1 for fungible tokens (FTs)"
-      min="1"
-      value=${asset.amount}
-      required
-      maxlength="64"
-      @input=${(e: { path?: Array<any> }) => {
-        if (e.path && e.path.length > 0 && Number(e.path[0].value) > 1) {
-          setAsset({ ...asset, amount: Number(e.path[0].value) });
-        } else {
-          setAsset({ ...asset, amount: 1 });
-        }
-      }}
-      @blur=${(e: { path?: Array<any> }) => {
-        if (e.path && e.path.length > 0 && Number(e.path[0].value) > 1) {
-          setAsset({ ...asset, amount: Number(e.path[0].value) });
-        } else {
-          setAsset({ ...asset, amount: 1 });
-        }
-      }}
-    ></sl-input>
-
-    <sl-input
-      label="Cover Image*"
-      type="url"
-      placeholder="Which image would you like to use? IPFS links are recommended"
-      required
-      maxlength="64"
-      value=${asset.image}
-      @input=${(e: { path?: Array<any> }) => {
-        if (e.path && e.path.length > 0) {
-          setAsset({ ...asset, image: e.path[0].value });
-        }
-      }}
-    ></sl-input>
-
-    <sl-details
-      summary="Do you want to upload a file to IPFS and use the attachment instead?"
-    >
-      Select a file to upload. When you're ready, press the upload button to
-      start pushing into IPFS.
-      <br /><br />
-      <input type="file" id="ipfs-fileinput" />
-
-      <sl-button-group>
-        <sl-button variant="primary" @click=${requestUpload}
-          >Upload file to IPFS</sl-button
+    <div class="container asset">
+      <section>
+        <sl-input
+          style="margin: 0"
+          placeholder="Token Name"
+          size="large"
+          .value=${asset.asset_name.length < 1 ? asset.name : asset.asset_name}
+          disabled
+        ></sl-input>
+        <sl-badge style="margin-top:1rem" variant=${tokenType.variant}
+          >${tokenType.type}</sl-badge
         >
-        <sl-button variant="warning" outline @click=${clearFile}
-          >Clear file</sl-button
+        <sl-divider style="--spacing: 2rem;"></sl-divider>
+        <div style="margin-top:2rem"></div>
+        <sl-input
+          label="Name*"
+          placeholder="What would you like people to call you?"
+          required
+          maxlength="64"
+          value=${asset.name}
+          @input=${(e: { path?: Array<any> }) => {
+            if (e.path && e.path.length > 0) {
+              setAsset({ ...asset, name: e.path[0].value });
+            }
+          }}
+        ></sl-input>
+
+        <sl-details summary="Do you want to specify a different token name?">
+          <sl-input
+            label="Asset Name"
+            placeholder="Set the asset name. Only numbers and letters. Up to 32 chars"
+            maxlength="32"
+            value=${asset.asset_name}
+            type="text"
+            @input=${(e: { path?: Array<any> }) => {
+              if (e.path && e.path.length > 0) {
+                setAsset({ ...asset, asset_name: e.path[0].value });
+              }
+            }}
+          ></sl-input>
+        </sl-details>
+
+        <sl-input
+          label="Amount*"
+          type="number"
+          placeholder="Number of copies for this token. 1 for NFTs and more than 1 for fungible tokens (FTs)"
+          min="1"
+          value=${asset.amount}
+          required
+          maxlength="64"
+          @input=${(e: { path?: Array<any> }) => {
+            if (e.path && e.path.length > 0 && Number(e.path[0].value) > 1) {
+              setAsset({ ...asset, amount: Number(e.path[0].value) });
+            } else {
+              setAsset({ ...asset, amount: 1 });
+            }
+          }}
+          @blur=${(e: { path?: Array<any> }) => {
+            if (e.path && e.path.length > 0 && Number(e.path[0].value) > 1) {
+              setAsset({ ...asset, amount: Number(e.path[0].value) });
+            } else {
+              setAsset({ ...asset, amount: 1 });
+            }
+          }}
+        ></sl-input>
+
+        <sl-input
+          label="Cover Image*"
+          type="url"
+          placeholder="Which image would you like to use? IPFS links are recommended"
+          required
+          maxlength="64"
+          value=${asset.image}
+          @input=${(e: { path?: Array<any> }) => {
+            if (e.path && e.path.length > 0) {
+              setAsset({ ...asset, image: e.path[0].value });
+            }
+          }}
+        ></sl-input>
+
+        <sl-details
+          summary="Do you want to upload a file to IPFS and use the attachment instead?"
         >
-      </sl-button-group>
-    </sl-details>
+          Select a file to upload. When you're ready, press the upload button to
+          start pushing into IPFS.
+          <br /><br />
+          <input type="file" id="ipfs-fileinput" />
 
-    <sl-textarea
-      label="Description"
-      placeholder="If you wish, write a description about the token"
-      value=${asset.description}
-      @input=${(e: { path?: Array<any> }) => {
-        if (e.path && e.path.length > 0) {
-          setAsset({ ...asset, description: e.path[0].value });
-        }
-      }}
-    >
-    </sl-textarea>
+          <sl-button-group>
+            <sl-button variant="primary" @click=${requestUpload}
+              >Upload file to IPFS</sl-button
+            >
+            <sl-button variant="warning" outline @click=${clearFile}
+              >Clear file</sl-button
+            >
+          </sl-button-group>
+        </sl-details>
 
-    <sl-details summary="Additional Files"> Coming Soon on this interface</sl-details>
+        <sl-textarea
+          label="Description"
+          placeholder="If you wish, write a description about the token"
+          value=${asset.description}
+          @input=${(e: { path?: Array<any> }) => {
+            if (e.path && e.path.length > 0) {
+              setAsset({ ...asset, description: e.path[0].value });
+            }
+          }}
+        >
+        </sl-textarea>
 
-    <sl-details summary="More Attributes"> Coming Soon on this interface</sl-details>
+        <sl-details summary="Additional Files">
+          Coming Soon on this interface</sl-details
+        >
+
+        <sl-details summary="More Attributes">
+          Coming Soon on this interface</sl-details
+        >
+      </section>
+      <section>
+        <sl-card
+          class="card-overview"
+          style="text-align:center; margin-top:2rem"
+        >
+          ${asset.image.length > 0
+            ? html` <img
+                slot="image"
+                src=${asset.image.length > 0
+                  ? `${asset.image}`.replace(
+                      'ipfs://',
+                      'https://ipfs.infura-ipfs.io/ipfs/'
+                    )
+                  : ''}
+                alt="Token cover"
+              />`
+            : html` <div class="skeleton-overview">
+                <header>
+                  <sl-skeleton></sl-skeleton>
+                </header>
+                <sl-skeleton></sl-skeleton>
+                <sl-skeleton></sl-skeleton>
+                <sl-skeleton></sl-skeleton>
+              </div>`}
+
+          <strong>${asset.name}</strong><br /><br />
+          ${asset.description.length > 0
+            ? html` <small>Description</small> <br />
+                ${asset.description}<br />`
+            : null}
+        </sl-card>
+      </section>
+    </div>
   `;
 }
 export { AssetForm };
