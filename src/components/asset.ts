@@ -113,7 +113,7 @@ function AssetForm(this: any, { index }: { index: number | string | null }) {
       if (asset.amount === 1) {
         setTokenType({ type: 'NFT', variant: 'primary' });
       } else if (asset.amount > 1) {
-        setTokenType({ type: 'Fungible Token', variant: 'neutral' });
+        setTokenType({ type: 'Fungible Token', variant: 'warning' });
       }
     }
   }, [asset]);
@@ -128,19 +128,26 @@ function AssetForm(this: any, { index }: { index: number | string | null }) {
           .value=${asset.asset_name.length < 1 ? asset.name : asset.asset_name}
           disabled
         ></sl-input>
-        <sl-badge style="margin-top:1rem" variant=${tokenType.variant}
-          >${tokenType.type}</sl-badge
-        >
-        <sl-card
-          class="card-overview"
-          style="text-align:center; width: 100%; margin-top: 1rem"
-        >
-          <div class="skeleton-overview">
-            ${asset.image.length > 0
-              ? html`
-                  <sl-responsive-media>
+        <div>
+          <sl-badge style="margin-top:1rem" variant=${tokenType.variant}
+            >${tokenType.type}</sl-badge
+          >
+          <sl-badge style="margin-top:1rem" variant="success"
+            >${asset.amount}</sl-badge
+          >
+        </div>
+
+        <div style="width: 100%; display: flex; justify-content:center;">
+          <sl-card
+            class="card-overview"
+            style="text-align:center; width:100%; max-width: 560px; margin-top: 1rem"
+          >
+            <div class="skeleton-overview">
+              ${asset.image.length > 0
+                ? html`
+                    <!-- <sl-responsive-media> -->
                     <img
-                      style="display: block; margin-bottom:1rem; "
+                      style="display: block; margin-bottom:1rem; object-fit: contain; width: 100% "
                       slot="image"
                       src=${asset.image.length > 0
                         ? `${asset.image}`.replace(
@@ -150,23 +157,25 @@ function AssetForm(this: any, { index }: { index: number | string | null }) {
                         : ''}
                       alt="Token cover"
                     />
-                  </sl-responsive-media>
-                `
-              : html` <header>
-                  <sl-skeleton effect="pulse"></sl-skeleton>
-                </header>`}
-            ${asset.name.length > 0
-              ? html` <strong>${asset.name}</strong><br /><br />
-                  ${asset.description.length > 0
-                    ? html` <small>Description</small> <br />
-                        ${asset.description}<br />`
-                    : null}`
-              : html` <sl-skeleton effect="pulse"></sl-skeleton>
-                  <sl-skeleton effect="pulse"></sl-skeleton>
-                  <sl-skeleton effect="pulse"></sl-skeleton>
-                  <sl-skeleton effect="pulse"></sl-skeleton>`}
-          </div>
-        </sl-card>
+                    <!-- </sl-responsive-media> -->
+                  `
+                : html` <header>
+                    <sl-skeleton effect="pulse"></sl-skeleton>
+                  </header>`}
+              ${asset.name.length > 0
+                ? html` <strong>${asset.name}</strong><br /><br />
+                    ${asset.description.length > 0
+                      ? html` <small>Description</small> <br />
+                          ${asset.description}<br />`
+                      : null}`
+                : html` <sl-skeleton effect="pulse"></sl-skeleton>
+                    <sl-skeleton effect="pulse"></sl-skeleton>
+                    <sl-skeleton effect="pulse"></sl-skeleton>
+                    <sl-skeleton effect="pulse"></sl-skeleton>`}
+            </div>
+          </sl-card>
+        </div>
+
         <sl-divider style="--spacing: 2rem;"></sl-divider>
         <div style="margin-top:2rem"></div>
         <sl-input
