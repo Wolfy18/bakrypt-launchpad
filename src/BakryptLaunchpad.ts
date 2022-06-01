@@ -21,7 +21,6 @@ import '@shoelace-style/shoelace/dist/components/card/card';
 import '@shoelace-style/shoelace/dist/components/dialog/dialog';
 import '@shoelace-style/shoelace/dist/components/qr-code/qr-code';
 import '@shoelace-style/shoelace/dist/components/skeleton/skeleton';
-import '@shoelace-style/shoelace/dist/components/responsive-media/responsive-media';
 
 window.customElements.define('bk-tab', component(Tab));
 window.customElements.define('bk-asset-form', component(AssetForm));
@@ -106,6 +105,41 @@ interface IFile {
   created_on: string;
 }
 
+const testTransaction: ITransaction | {} = {
+  amount: 1,
+  blockchain_fee: 0.227805,
+  convenience_fee: 6,
+  cost: 15.25561,
+  created_on: '2022-04-30 16:12:13.983673+00:00',
+  deposit_address: 'addr1vxzqwzt22hkmkslkhyzt65976etatclvxvtwht6g3z8hgds8n20s8',
+  description: 'Collection: 7c4dcc1b-73db-4e74-90c8-a0e2b23a0bb1',
+  fraud_status: 'unknown',
+  has_royalties: true,
+  image: '',
+  invalid_slot: '59855240',
+  is_auto_processing: false,
+  is_deleted: false,
+  is_minted: false,
+  is_refunded: false,
+  is_resubmitted: false,
+  is_voided: false,
+  issuer_address: null,
+  name: '',
+  policy_id: '7517575ec43144fcba643475f01832ca3c3685fbb6b0b618f752700c',
+  royalties:
+    'addr_test1qzr84dy9syhkdy3ffn8c3mn8n2zh0wzhgwltz2dle5phaaky56y0ulyxyrz2mra05y8xsnxcgphrleag8mxs0llszrkjah',
+  royalties_burned: false,
+  royalties_burned_on: null,
+  royalties_minted: false,
+  royalties_minted_on: null,
+  royalties_rate: '3.00',
+  status: 'error',
+  status_description: 'Waiting for funds',
+  type: 'ADA',
+  updated_on: '2022-04-30 16:12:16.840865+00:00',
+  uuid: '20baaf19-7cd6-4723-95c6-b1f554a27bbb',
+};
+
 function BakryptLaunchpad(this: any) {
   useStyles(this, [
     shoeStyles,
@@ -140,8 +174,7 @@ function BakryptLaunchpad(this: any) {
   const [bakryptURI, setBakryptUri] = useState('');
   const [accessToken, setAccessToken] = useState('');
   const [refreshToken, setRefreshToken] = useState('');
-  const [transactionStatusVariant, setTransactionStatusVariant] =
-    useState('neutral');
+
   const [collectionRequest, setCollectionRequest] = useState([
     {
       blockchain: 'ada',
@@ -159,8 +192,10 @@ function BakryptLaunchpad(this: any) {
     rate: '',
     address: '',
   });
-  const [transaction, setTransaction] = useState();
-
+  const [transaction, setTransaction] = useState(testTransaction);
+  const [transactionStatusVariant, setTransactionStatusVariant] = useState(
+    transaction ? 'primary' : 'neutral'
+  );
   // Escape html string
   const escapeHtml = (text: string) => {
     const div = document.createElement('div');
@@ -361,6 +396,11 @@ function BakryptLaunchpad(this: any) {
       console.log(error);
       notify('Unable to retrieve transaction. Internal Server Error', 'danger');
     }
+
+    // Repeat call every 15 seconds
+    setTimeout(() => {
+      retrieveTransaction(uuid);
+    }, 15000);
   };
 
   // Submit collection to the assets API
@@ -477,7 +517,6 @@ function BakryptLaunchpad(this: any) {
         refreshAccessToken(refreshToken);
       }, 3000); // Every 30 minutes
     }
-
     if (accessToken) {
       // Do something over here
       console.log(accessToken);
@@ -603,58 +642,93 @@ function BakryptLaunchpad(this: any) {
     </section>
 
     <!-- Transaction Dialog -->
-    <sl-dialog
-      label="Transaction Invoice"
-      class="dialog-width"
-      style="--width: 50vw;"
-    >
-      <sl-qr-code
-        value=${transaction
-          ? (<ITransaction>transaction).deposit_address
-          : 'https://bakrypt.io'}
-        label="Scan this code for the deposit_address!"
-      ></sl-qr-code>
-      <sl-input
-        maxlength="255"
-        label="Deposit Address"
-        value=${transaction ? (<ITransaction>transaction).deposit_address : ''}
-        readonly
-      ></sl-input>
-      <sl-input
-        maxlength="255"
-        type="number"
-        label="Deposit Amount Required"
-        value=${transaction ? (<ITransaction>transaction).cost : ''}
-        readonly
-      ></sl-input>
-      <sl-badge
-        style="margin-top:1rem; margin-bottom: 2rem"
-        variant=${transactionStatusVariant}
-        >${transaction ? (<ITransaction>transaction).status : ''}</sl-badge
+    <sl-dialog label="Invoice" class="dialog-width" style="--width: 50vw;">
+      <div
+        style="
+        display: grid;
+        grid-template-columns: 1fr 3fr;
+        grid-gap: 1rem;
+        align-items:center
+      "
       >
+        <div>
+          <sl-qr-code
+            value=${transaction
+              ? (<ITransaction>transaction).deposit_address
+              : 'https://bakrypt.io'}
+            label="Scan this code for the deposit_address!"
+          ></sl-qr-code>
+        </div>
+        <div>
+          <sl-input
+            maxlength="255"
+            label="Deposit Address"
+            value=${transaction
+              ? (<ITransaction>transaction).deposit_address
+              : ''}
+            readonly
+            filled
+          ></sl-input>
+          <sl-input
+            maxlength="255"
+            type="number"
+            label="Estimated cost"
+            value=${transaction ? (<ITransaction>transaction).cost : ''}
+            readonly
+            filled
+          ></sl-input>
+        </div>
+      </div>
+
+      <div
+        style="display: flex; justify-content:space-between; align-items:center"
+      >
+        <sl-badge
+          style="margin-bottom: 1rem"
+          variant=${transactionStatusVariant}
+          >${transaction ? (<ITransaction>transaction).status : ''}</sl-badge
+        >
+        ${(<ITransaction>transaction).status &&
+        ['rejected', 'error'].includes((<ITransaction>transaction).status)
+          ? html` <div>
+              <sl-button variant="primary">Retry</sl-button>
+              <sl-button variant="warning" outline style="margin-left:1rem"
+                >Refund</sl-button
+              >
+            </div>`
+          : null}
+      </div>
       <sl-textarea
         label="Status Description"
         value=${transaction
           ? (<ITransaction>transaction).status_description
           : ''}
         readonly
+        filled
       >
       </sl-textarea>
 
-      <sl-card class="card-header">
+      <sl-alert variant="warning" style="margin-top:2 rem" open>
+        <sl-icon slot="icon" name="exclamation-triangle"></sl-icon>
+        <strong>DO NOT TRANSFER FUNDS FROM AN EXCHANGE!</strong> <br />
+        We will send all the tokens and change to the payor's address; meaning
+        that the payment must be done from a wallet that you can control and its
+        capable of manage native tokens.
+      </sl-alert>
+
+      <!-- <sl-card class="card-header" style="margin-top:2 rem">
         <div slot="header">
           Attention! Please read this message
 
           <sl-icon-button name="gear" label="Settings"></sl-icon-button>
         </div>
 
-        DO NOT DEPOSIT FROM A EXCHANGE! We will send all the tokens and change
-        to the payor's address; meaning that the payment must be done from a
-        wallet that you own.
-      </sl-card>
+        DO NOT TRANSFER FUNDS FROM AN EXCHANGE! We will send all the tokens and
+        change to the payor's address; meaning that the payment must be done
+        from a wallet that you can control.
+      </sl-card> -->
 
       <br />
-      <sl-button slot="footer" variant="primary">Close</sl-button>
     </sl-dialog>
 
     <!-- Alert container -->
