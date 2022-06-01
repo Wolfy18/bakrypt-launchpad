@@ -192,7 +192,7 @@ function BakryptLaunchpad(this: any) {
     rate: '',
     address: '',
   });
-  const [transaction, setTransaction] = useState(testTransaction);
+  const [transaction, setTransaction] = useState();
   const [transactionStatusVariant, setTransactionStatusVariant] = useState(
     transaction ? 'primary' : 'neutral'
   );
@@ -216,7 +216,7 @@ function BakryptLaunchpad(this: any) {
       duration,
       innerHTML: `
         <sl-icon name="${icon}" slot="icon"></sl-icon>
-        ${escapeHtml(message)}
+        ${message}
       `,
     });
 
@@ -443,6 +443,17 @@ function BakryptLaunchpad(this: any) {
           notify(jsonResponse.error_description, 'danger');
         else if (jsonResponse.error) notify(jsonResponse.error, 'danger');
         else if (jsonResponse.detail) notify(jsonResponse.detail, 'danger');
+        else if (Array.isArray(jsonResponse)) {
+          const errors = jsonResponse.map((i, idx) => {
+            let error = `<br/>Asset #${idx + 1} <br/>`;
+            for (const [k, v] of Object.entries(i)) {
+              error += `${k}: ${v} <br/>`;
+            }
+            return error;
+          });
+
+          notify(errors.join(' '), 'danger');
+        }
       }
     } catch (error) {
       notify(`Unable to submit request. Error: ${error}`, 'danger');
@@ -451,6 +462,97 @@ function BakryptLaunchpad(this: any) {
     const invDialog: any = this.shadowRoot.querySelector('sl-dialog');
     if (invDialog && showInvoice) {
       invDialog.show();
+    }
+  };
+
+  // Submit collection to the assets API
+  const submitRetry = async () => {
+    try {
+      const submitRetryRequest = await fetch(
+        `${bakryptURI}/v1/transactions/${
+          (<ITransaction>transaction).uuid
+        }/refund/`,
+        {
+          method: 'POST',
+          headers: {
+            'content-type': 'application/json',
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
+      );
+
+      if (submitRetryRequest.ok) {
+        const jsonResponse: IAsset[] | IAsset = await submitRetryRequest.json();
+
+        notify('Request was submitted', 'success');
+        console.log(jsonResponse);
+        // if (Array.isArray(jsonResponse)) {
+        //   const prAsset = jsonResponse[0];
+        //   if (prAsset.transaction) {
+        //     // Retrieve Transaction Data
+        //     retrieveTransaction(String(prAsset.transaction));
+        //   }
+        // } else if (
+        //   jsonResponse.transaction &&
+        //   (<ITransaction>jsonResponse.transaction).uuid
+        // ) {
+        //   setTransaction(jsonResponse.transaction);
+        // }
+      } else {
+        const jsonResponse: ErrorResponse = await submitRetryRequest.json();
+        if (jsonResponse.error_description)
+          notify(jsonResponse.error_description, 'danger');
+        else if (jsonResponse.error) notify(jsonResponse.error, 'danger');
+        else if (jsonResponse.detail) notify(jsonResponse.detail, 'danger');
+      }
+    } catch (error) {
+      notify(`Unable to submit request. Error: ${error}`, 'danger');
+    }
+  };
+
+  // Submit collection to the assets API
+  const submitRefund = async () => {
+    try {
+      const submitRefundRequest = await fetch(
+        `${bakryptURI}/v1/transactions/${
+          (<ITransaction>transaction).uuid
+        }/refund/`,
+        {
+          method: 'POST',
+          headers: {
+            'content-type': 'application/json',
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
+      );
+
+      if (submitRefundRequest.ok) {
+        const jsonResponse: IAsset[] | IAsset =
+          await submitRefundRequest.json();
+
+        notify('Refund was submitted', 'success');
+        console.log(jsonResponse);
+        // if (Array.isArray(jsonResponse)) {
+        //   const prAsset = jsonResponse[0];
+        //   if (prAsset.transaction) {
+        //     // Retrieve Transaction Data
+        //     retrieveTransaction(String(prAsset.transaction));
+        //   }
+        // } else if (
+        //   jsonResponse.transaction &&
+        //   (<ITransaction>jsonResponse.transaction).uuid
+        // ) {
+        //   setTransaction(jsonResponse.transaction);
+        // }
+      } else {
+        const jsonResponse: ErrorResponse = await submitRefundRequest.json();
+        if (jsonResponse.error_description)
+          notify(jsonResponse.error_description, 'danger');
+        else if (jsonResponse.error) notify(jsonResponse.error, 'danger');
+        else if (jsonResponse.detail) notify(jsonResponse.detail, 'danger');
+      }
+    } catch (error) {
+      notify(`Unable to refund request. Error: ${error}`, 'danger');
     }
   };
 
@@ -636,7 +738,7 @@ function BakryptLaunchpad(this: any) {
             >`}
       ${transaction
         ? html` <sl-button variant="success" outline @click=${viewTransaction}
-            >Show Transaction Invoice</sl-button
+            >Show Invoice</sl-button
           >`
         : null}
     </section>
@@ -666,8 +768,10 @@ function BakryptLaunchpad(this: any) {
             value=${transaction
               ? (<ITransaction>transaction).deposit_address
               : ''}
+            type="password"
             readonly
             filled
+            toggle-password
           ></sl-input>
           <sl-input
             maxlength="255"
@@ -688,11 +792,18 @@ function BakryptLaunchpad(this: any) {
           variant=${transactionStatusVariant}
           >${transaction ? (<ITransaction>transaction).status : ''}</sl-badge
         >
-        ${(<ITransaction>transaction).status &&
+        ${transaction &&
+        (<ITransaction>transaction).status &&
         ['rejected', 'error'].includes((<ITransaction>transaction).status)
           ? html` <div>
-              <sl-button variant="primary">Retry</sl-button>
-              <sl-button variant="warning" outline style="margin-left:1rem"
+              <sl-button variant="primary" @click=${submitRetry}
+                >Retry</sl-button
+              >
+              <sl-button
+                variant="warning"
+                @click=${submitRefund}
+                outline
+                style="margin-left:1rem"
                 >Refund</sl-button
               >
             </div>`
