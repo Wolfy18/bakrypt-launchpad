@@ -21,6 +21,7 @@ import '@shoelace-style/shoelace/dist/components/card/card';
 import '@shoelace-style/shoelace/dist/components/dialog/dialog';
 import '@shoelace-style/shoelace/dist/components/qr-code/qr-code';
 import '@shoelace-style/shoelace/dist/components/skeleton/skeleton';
+import '@shoelace-style/shoelace/dist/components/responsive-media/responsive-media';
 
 window.customElements.define('bk-tab', component(Tab));
 window.customElements.define('bk-asset-form', component(AssetForm));
@@ -130,6 +131,8 @@ function BakryptLaunchpad(this: any) {
       :host .component-section {
         padding-left: 0.85rem;
         padding-right: 0.85rem;
+        max-width: 1200px;
+        margin: 0 auto;
       }
     `,
   ]);
@@ -137,7 +140,8 @@ function BakryptLaunchpad(this: any) {
   const [bakryptURI, setBakryptUri] = useState('');
   const [accessToken, setAccessToken] = useState('');
   const [refreshToken, setRefreshToken] = useState('');
-  const [transactionStatusVariant, setTransactionStatusVariant] = useState('neutral');
+  const [transactionStatusVariant, setTransactionStatusVariant] =
+    useState('neutral');
   const [collectionRequest, setCollectionRequest] = useState([
     {
       blockchain: 'ada',
@@ -511,6 +515,15 @@ function BakryptLaunchpad(this: any) {
     <!-- Royalties section -->
     <section class="component-section" style="margin-top:1rem">
       Royalties Information
+      <sl-badge
+        style="margin-left:0.5rem"
+        variant=${royalties.rate.length > 0 && royalties.address.length > 0
+          ? 'success'
+          : 'neutral'}
+        >${royalties.rate.length > 0 && royalties.address.length > 0
+          ? 'Active'
+          : 'Not Active'}</sl-badge
+      >
       <sl-divider style="--spacing: 2rem;"></sl-divider>
       <sl-details
         summary="Would you like to set royalties for this collection?"
@@ -575,10 +588,14 @@ function BakryptLaunchpad(this: any) {
                 submitRequest(col);
               }}
               >Submit request</sl-button
-            ><sl-button variant="primary" outline @click=${addAdditionalAsset}
+            ><sl-button
+              variant="primary"
+              outline
+              @click=${addAdditionalAsset}
+              style="margin-left:2rem"
               >Add Asset</sl-button
             >`}
-      ${transaction || true
+      ${transaction
         ? html` <sl-button variant="success" outline @click=${viewTransaction}
             >Show Transaction Invoice</sl-button
           >`
@@ -599,7 +616,6 @@ function BakryptLaunchpad(this: any) {
       ></sl-qr-code>
       <sl-input
         maxlength="255"
-        
         label="Deposit Address"
         value=${transaction ? (<ITransaction>transaction).deposit_address : ''}
         readonly
@@ -611,7 +627,9 @@ function BakryptLaunchpad(this: any) {
         value=${transaction ? (<ITransaction>transaction).cost : ''}
         readonly
       ></sl-input>
-      <sl-badge style="margin-top:1rem; margin-bottom: 2rem" variant=${transactionStatusVariant}
+      <sl-badge
+        style="margin-top:1rem; margin-bottom: 2rem"
+        variant=${transactionStatusVariant}
         >${transaction ? (<ITransaction>transaction).status : ''}</sl-badge
       >
       <sl-textarea
