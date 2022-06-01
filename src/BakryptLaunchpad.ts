@@ -346,7 +346,7 @@ function BakryptLaunchpad(this: any) {
   const retrieveTransaction = async (uuid: string) => {
     try {
       const retrieveTransactionRequest = await fetch(
-        `${bakryptURI}/v1/transactions/${uuid}`,
+        `${bakryptURI}/v1/transactions/${uuid}/`,
         {
           method: 'GET',
           headers: {
@@ -445,10 +445,14 @@ function BakryptLaunchpad(this: any) {
         else if (jsonResponse.detail) notify(jsonResponse.detail, 'danger');
         else if (Array.isArray(jsonResponse)) {
           const errors = jsonResponse.map((i, idx) => {
-            let error = `<br/>Asset #${idx + 1} <br/>`;
-            for (const [k, v] of Object.entries(i)) {
-              error += `${k}: ${v} <br/>`;
+            let error = ``;
+            if (Object.keys(i).length > 0) {
+              error = `<br/>Asset #${idx + 1} <br/>`;
+              for (const [k, v] of Object.entries(i)) {
+                error += `${k}: ${v} <br/>`;
+              }
             }
+
             return error;
           });
 
@@ -471,7 +475,7 @@ function BakryptLaunchpad(this: any) {
       const submitRetryRequest = await fetch(
         `${bakryptURI}/v1/transactions/${
           (<ITransaction>transaction).uuid
-        }/refund/`,
+        }/mint/`,
         {
           method: 'POST',
           headers: {
@@ -745,8 +749,17 @@ function BakryptLaunchpad(this: any) {
 
     <!-- Transaction Dialog -->
     <sl-dialog label="Invoice" class="dialog-width" style="--width: 50vw;">
+      <sl-alert variant="warning" style="" open>
+        <sl-icon slot="icon" name="exclamation-triangle"></sl-icon>
+        <strong>DO NOT TRANSFER FUNDS FROM AN EXCHANGE!</strong> <br />
+        We will send all tokens and change to the payor's address; meaning
+        that the payment must be done from a wallet that you can control and its
+        capable of manage native tokens.
+      </sl-alert>
+
       <div
         style="
+        margin-top:2rem;
         display: grid;
         grid-template-columns: 1fr 3fr;
         grid-gap: 1rem;
@@ -764,23 +777,42 @@ function BakryptLaunchpad(this: any) {
         <div>
           <sl-input
             maxlength="255"
-            label="Deposit Address"
-            value=${transaction
-              ? (<ITransaction>transaction).deposit_address
-              : ''}
-            type="password"
-            readonly
-            filled
-            toggle-password
-          ></sl-input>
-          <sl-input
-            maxlength="255"
-            type="number"
-            label="Estimated cost"
-            value=${transaction ? (<ITransaction>transaction).cost : ''}
+            label="Policy ID"
+            value=${transaction ? (<ITransaction>transaction).policy_id : ''}
+            type="text"
             readonly
             filled
           ></sl-input>
+          ${transaction && (<ITransaction>transaction).status !== 'confirmed'
+            ? html` <sl-input
+                maxlength="255"
+                label="Deposit Address"
+                value=${transaction
+                  ? (<ITransaction>transaction).deposit_address
+                  : ''}
+                type="password"
+                readonly
+                filled
+                toggle-password
+              ></sl-input>`
+            : null}
+          ${transaction && (<ITransaction>transaction).status !== 'confirmed'
+            ? html` <sl-input
+                maxlength="255"
+                type="number"
+                label="Estimated cost"
+                value=${transaction ? (<ITransaction>transaction).cost : ''}
+                readonly
+                filled
+              ></sl-input>`
+            : html` <sl-input
+                maxlength="255"
+                type="number"
+                label="Final Cost"
+                value=${transaction ? (<ITransaction>transaction).cost : ''}
+                readonly
+                filled
+              ></sl-input>`}
         </div>
       </div>
 
@@ -792,22 +824,30 @@ function BakryptLaunchpad(this: any) {
           variant=${transactionStatusVariant}
           >${transaction ? (<ITransaction>transaction).status : ''}</sl-badge
         >
-        ${transaction &&
-        (<ITransaction>transaction).status &&
-        ['rejected', 'error'].includes((<ITransaction>transaction).status)
-          ? html` <div>
-              <sl-button variant="primary" @click=${submitRetry}
-                >Retry</sl-button
-              >
-              <sl-button
-                variant="warning"
-                @click=${submitRefund}
-                outline
-                style="margin-left:1rem"
-                >Refund</sl-button
-              >
-            </div>`
-          : null}
+        <div>
+          ${transaction &&
+          (<ITransaction>transaction).status &&
+          ['rejected', 'error'].includes((<ITransaction>transaction).status)
+            ? html`
+                <sl-button variant="primary" @click=${submitRetry}
+                  >Retry</sl-button
+                >
+              `
+            : null}
+          ${transaction &&
+          (<ITransaction>transaction).status &&
+          (<ITransaction>transaction).status !== 'confirmed'
+            ? html`
+                <sl-button
+                  variant="warning"
+                  outline
+                  @click=${submitRefund}
+                  style="margin-left:1rem"
+                  >Submit Refund</sl-button
+                >
+              `
+            : null}
+        </div>
       </div>
       <sl-textarea
         label="Status Description"
@@ -818,28 +858,6 @@ function BakryptLaunchpad(this: any) {
         filled
       >
       </sl-textarea>
-
-      <sl-alert variant="warning" style="margin-top:2 rem" open>
-        <sl-icon slot="icon" name="exclamation-triangle"></sl-icon>
-        <strong>DO NOT TRANSFER FUNDS FROM AN EXCHANGE!</strong> <br />
-        We will send all the tokens and change to the payor's address; meaning
-        that the payment must be done from a wallet that you can control and its
-        capable of manage native tokens.
-      </sl-alert>
-
-      <!-- <sl-card class="card-header" style="margin-top:2 rem">
-        <div slot="header">
-          Attention! Please read this message
-
-          <sl-icon-button name="gear" label="Settings"></sl-icon-button>
-        </div>
-
-        DO NOT TRANSFER FUNDS FROM AN EXCHANGE! We will send all the tokens and
-        change to the payor's address; meaning that the payment must be done
-        from a wallet that you can control.
-      </sl-card> -->
-
-      <br />
     </sl-dialog>
 
     <!-- Alert container -->
