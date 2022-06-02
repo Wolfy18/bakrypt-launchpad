@@ -1,6 +1,7 @@
 import { css } from 'lit';
 import { html, component, useState, useEffect } from 'haunted';
 import { useStyles } from '../hooks/useStyles';
+import { IAsset, IAssetFile } from '../types';
 
 function AssetForm(this: any, { index }: { index: number | string | null }) {
   useStyles(this, [
@@ -104,6 +105,52 @@ function AssetForm(this: any, { index }: { index: number | string | null }) {
     });
 
     this.dispatchEvent(event);
+  };
+
+  const addFile = () => {
+    const section = this.shadowRoot.querySelector('#additional-files-section');
+    if (section) {
+      // create object and append it to files dictionary
+      let file: IAssetFile = { name: '', src: '', mediaType: '' };
+
+      if (!asset.files || !Array.isArray(asset.files)) {
+        asset.files = [];
+      }
+
+      // Create input group: name, src, mediaType.
+      // Link input event to the file keys
+      const nameInput = document.createElement('sl-input');
+      nameInput.addEventListener('input', (e: any) => {
+        if (e.path && e.path.length > 0) {
+          file.name = e.path[0].value;
+        }
+      });
+
+      const srcInput = document.createElement('sl-input');
+      srcInput.addEventListener('input', (e: any) => {
+        if (e.path && e.path.length > 0) {
+          file.src = e.path[0].value;
+        }
+      });
+
+      const mediaTypeInput = document.createElement('sl-input');
+      mediaTypeInput.addEventListener('input', (e: any) => {
+        if (e.path && e.path.length > 0) {
+          file.mediaType = e.path[0].value;
+        }
+      });
+
+      <IAsset>asset.files.push(file);
+      // Create group
+      const group:HTMLElement = document.createElement('<div>')
+      group.classList.add("file-input-group")
+      group.appendChild(nameInput);
+      group.appendChild(srcInput);
+      group.appendChild(mediaTypeInput);
+      
+      // Append input group to section
+      section.appendChild(group);
+    }
   };
 
   useEffect(() => {
@@ -274,9 +321,16 @@ function AssetForm(this: any, { index }: { index: number | string | null }) {
         >
         </sl-textarea>
 
-        <sl-details summary="Additional Files">
-          Coming Soon on this interface</sl-details
-        >
+        <sl-details summary="Additional Files" id="additional-files-section">
+          <sl-button
+            variant="success"
+            outline
+            @click=${() => {
+              console.log('hello');
+            }}
+            >Add File</sl-button
+          >
+        </sl-details>
 
         <sl-details summary="More Attributes">
           Coming Soon on this interface</sl-details

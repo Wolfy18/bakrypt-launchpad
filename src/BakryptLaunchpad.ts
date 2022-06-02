@@ -5,6 +5,13 @@ import { style } from './assets/css/main.css';
 import { useStyles } from './hooks/useStyles';
 import { Tab } from './components/tab';
 import { AssetForm } from './components/asset';
+import {
+  IAsset,
+  ITransaction,
+  IFile,
+  AccessToken,
+  ErrorResponse,
+} from '../types';
 import '@shoelace-style/shoelace/dist/components/tab-group/tab-group';
 import '@shoelace-style/shoelace/dist/components/tab/tab';
 import '@shoelace-style/shoelace/dist/components/tab-panel/tab-panel';
@@ -24,86 +31,6 @@ import '@shoelace-style/shoelace/dist/components/skeleton/skeleton';
 
 window.customElements.define('bk-tab', component(Tab));
 window.customElements.define('bk-asset-form', component(AssetForm));
-
-interface AccessToken {
-  access_token: string;
-  expires_in: number;
-  token_type: string;
-  scope: string;
-  refresh_token: string;
-}
-
-interface ErrorResponse {
-  error?: string;
-  error_description?: string;
-  detail?: string;
-}
-
-interface IAssetFile {
-  name: string;
-  src: string;
-  mediaType: string;
-}
-
-interface ITransaction {
-  uuid: string;
-  blockchain: string;
-  status: string;
-  status_description: string;
-  fraud_status: string;
-  issuer_address: string;
-  policy_id: string;
-  invalid_slot: string;
-  cost: string;
-  convenience_fee: string;
-  blockchain_fee: string;
-  is_deleted: boolean;
-  is_minted: boolean;
-  is_voided: boolean;
-  is_resubmitted: boolean;
-  is_refunded: boolean;
-  deposit_address: string;
-  created_on: string;
-  updated_on: string;
-  is_auto_processing: boolean;
-  has_royalties: boolean;
-  royalties_minted: boolean;
-  royalties_minted_on: string;
-  royalties_burned: boolean;
-  royalties_burned_on: string;
-  name: string;
-  image: string;
-  description: string;
-  amount: number;
-}
-
-interface IAsset {
-  uuid?: string;
-  blockchain: string;
-  name: string;
-  asset_name: string;
-  image: string;
-  mediaType: string;
-  description: string;
-  files: Array<IAssetFile>;
-  attrs: object;
-  amount: number;
-  royalties?: string;
-  royalties_rate?: string;
-  transaction?: string | ITransaction;
-}
-
-interface IFile {
-  uuid: string;
-  file: string;
-  name: string;
-  filename: string;
-  size: string;
-  mimetype: string;
-  ipfs: string;
-  gateway: string;
-  created_on: string;
-}
 
 const testTransaction: ITransaction | {} = {
   amount: 1,
@@ -752,8 +679,8 @@ function BakryptLaunchpad(this: any) {
       <sl-alert variant="warning" style="" open>
         <sl-icon slot="icon" name="exclamation-triangle"></sl-icon>
         <strong>DO NOT TRANSFER FUNDS FROM AN EXCHANGE!</strong> <br />
-        We will send all tokens and change to the payor's address; meaning
-        that the payment must be done from a wallet that you can control and its
+        We will send all tokens and change to the payor's address; meaning that
+        the payment must be done from a wallet that you can control and its
         capable of manage native tokens.
       </sl-alert>
 
@@ -770,7 +697,7 @@ function BakryptLaunchpad(this: any) {
           <sl-qr-code
             value=${transaction
               ? (<ITransaction>transaction).deposit_address
-              : 'https://bakrypt.io'}
+              : 'Not found'}
             label="Scan this code for the deposit_address!"
           ></sl-qr-code>
         </div>
