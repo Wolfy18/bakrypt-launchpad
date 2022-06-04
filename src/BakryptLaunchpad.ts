@@ -3,7 +3,6 @@ import { html, component, useEffect, useState } from 'haunted';
 import shoeStyles from '@shoelace-style/shoelace/dist/themes/light.styles';
 import { style } from './assets/css/main.css';
 import { useStyles } from './hooks/useStyles';
-import { Tab } from './components/tab';
 import { AssetForm } from './components/asset';
 import {
   IAsset,
@@ -11,7 +10,7 @@ import {
   IFile,
   AccessToken,
   ErrorResponse,
-} from './api/interfaces';
+} from './adapters/interfaces';
 import '@shoelace-style/shoelace/dist/components/tab-group/tab-group';
 import '@shoelace-style/shoelace/dist/components/tab/tab';
 import '@shoelace-style/shoelace/dist/components/tab-panel/tab-panel';
@@ -30,7 +29,6 @@ import '@shoelace-style/shoelace/dist/components/dialog/dialog';
 import '@shoelace-style/shoelace/dist/components/qr-code/qr-code';
 import '@shoelace-style/shoelace/dist/components/skeleton/skeleton';
 
-window.customElements.define('bk-tab', component(Tab));
 window.customElements.define('bk-asset-form', component(AssetForm));
 
 const testTransaction: ITransaction | {} = {
@@ -253,7 +251,21 @@ function BakryptLaunchpad(this: any) {
           const asset: IAsset = col[Number(index)];
           asset.image = jsonResponse.ipfs;
           asset.mediaType = jsonResponse.mimetype;
-          
+
+          const form = this.shadowRoot.querySelectorAll('bk-asset-form');
+          if (form) {
+            [...form].filter((i:any) => i.index === Number(index)).map((i: HTMLElement) => {
+              console.log("its going to pass it down...")
+              console.log(i)
+              // Object.defineProperty(i, 'detailedAsset', {
+              //   value: asset,
+              //   writable: true,
+              //   configurable: true,
+              // });
+              
+              return i;
+            });
+          }
         }
 
         notify('Successfully uploaded file to IPFS', 'success');

@@ -1,7 +1,7 @@
 import { css } from 'lit';
 import { html, component, useState, useEffect } from 'haunted';
 import { useStyles } from '../hooks/useStyles';
-import { IAsset, IAssetFile } from '../api/interfaces';
+import { IAsset, IAssetFile } from '../adapters/interfaces';
 
 const _asset: IAsset = {
   blockchain: 'ada',
@@ -88,6 +88,11 @@ function AssetForm(this: any, { index }: { index: number | string | null }) {
         position: absolute;
         top: -2rem;
         right: 0;
+      }
+
+      :host .attr-row {
+        width: 90%;
+        margin: 0 auto;
       }
     `,
   ]);
@@ -339,15 +344,48 @@ function AssetForm(this: any, { index }: { index: number | string | null }) {
                     <sl-skeleton effect="pulse"></sl-skeleton>
                   </header>`}
               ${asset.name.length > 0
-                ? html` <strong>${asset.name}</strong><br /><br />
+                ? html`
+                    <h1><strong>${asset.name}</strong></h1>
                     ${asset.description.length > 0
-                      ? html` <small>Description</small> <br />
-                          ${asset.description}<br />`
-                      : null}`
-                : html` <sl-skeleton effect="pulse"></sl-skeleton>
+                      ? html`
+                          <small>Description</small> <br />
+                          <p>${asset.description}</p>
+                        `
+                      : null}
+                  `
+                : html`
                     <sl-skeleton effect="pulse"></sl-skeleton>
                     <sl-skeleton effect="pulse"></sl-skeleton>
+                  `}
+              ${asset.files && asset.files.length > 0
+                ? asset.files.map(
+                    i =>
+                      html`<div class="attr-row">
+                        <img
+                          style="display: block; margin-bottom:1rem; object-fit: contain; width: 100% "
+                          slot="image"
+                          src=${i.src.replace(
+                            'ipfs://',
+                            'https://ipfs.infura-ipfs.io/ipfs/'
+                          )}
+                          alt=${i.name}
+                        />
+                        <h3>${i.name}</h3>
+                      </div>`
+                  )
+                : html`<sl-skeleton effect="pulse"></sl-skeleton>
                     <sl-skeleton effect="pulse"></sl-skeleton>`}
+              ${asset.attrs && Object.keys(asset.attrs).length > 0
+                ? Object.keys(asset.attrs).map(
+                    (i: any) =>
+                      html`<div class="attr-row">
+                        <h4 style="margin-bottom: 0.5rem">${String(i)}</h4>
+                        <p style="margin-top: 0;">
+                          ${asset.attrs[i as keyof Object]}
+                        </p>
+                      </div>`
+                  )
+                : null}
             </div>
           </sl-card>
         </div>
