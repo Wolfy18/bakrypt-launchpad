@@ -11,7 +11,7 @@ import {
   IFile,
   AccessToken,
   ErrorResponse,
-} from '../types';
+} from './api/interfaces';
 import '@shoelace-style/shoelace/dist/components/tab-group/tab-group';
 import '@shoelace-style/shoelace/dist/components/tab/tab';
 import '@shoelace-style/shoelace/dist/components/tab-panel/tab-panel';
@@ -21,6 +21,7 @@ import '@shoelace-style/shoelace/dist/components/textarea/textarea';
 import '@shoelace-style/shoelace/dist/components/divider/divider';
 import '@shoelace-style/shoelace/dist/components/alert/alert';
 import '@shoelace-style/shoelace/dist/components/icon/icon';
+import '@shoelace-style/shoelace/dist/components/icon-button/icon-button';
 import '@shoelace-style/shoelace/dist/components/details/details';
 import '@shoelace-style/shoelace/dist/components/button-group/button-group';
 import '@shoelace-style/shoelace/dist/components/badge/badge';
@@ -252,6 +253,7 @@ function BakryptLaunchpad(this: any) {
           const asset: IAsset = col[Number(index)];
           asset.image = jsonResponse.ipfs;
           asset.mediaType = jsonResponse.mimetype;
+          
         }
 
         notify('Successfully uploaded file to IPFS', 'success');
@@ -488,7 +490,7 @@ function BakryptLaunchpad(this: any) {
   };
 
   // Add additional tab and panel
-  const addAdditionalAsset = () => {
+  const addAsset = () => {
     const template = this.shadowRoot
       .querySelector('#asset-template')
       .cloneNode(true);
@@ -519,6 +521,13 @@ function BakryptLaunchpad(this: any) {
 
       // newTab.active = true;
       container.appendChild(newNode);
+
+      // click the new tab
+      // const newTab = container.shadowRoot.querySelector('sl-tab');
+      // console.log(newTab);
+      // if(newTab){
+      //   newTab.focus();
+      // }
     }
   };
 
@@ -616,7 +625,7 @@ function BakryptLaunchpad(this: any) {
         ></sl-input>
 
         <sl-input
-          label="Royalties deposit address"
+          label="Royalties wallet address"
           placeholder="Set the payment address for the royalties"
           maxlength="128"
           value=${royalties.address}
@@ -663,7 +672,7 @@ function BakryptLaunchpad(this: any) {
             ><sl-button
               variant="primary"
               outline
-              @click=${addAdditionalAsset}
+              @click=${addAsset}
               style="margin-left:2rem"
               >Add Asset</sl-button
             >`}
@@ -792,7 +801,9 @@ function BakryptLaunchpad(this: any) {
 
     <!-- Asset template -->
     <template id="asset-template">
-      <sl-tab slot="nav" panel="__prefix__" closable>Asset #__prefix__</sl-tab>
+      <sl-tab slot="nav" panel="__prefix__" closable>
+        Asset #__prefix__
+      </sl-tab>
 
       <sl-tab-panel name="__prefix__">
         <div style="text-align: left; padding-top:1rem">

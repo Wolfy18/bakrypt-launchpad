@@ -1,7 +1,19 @@
 import { css } from 'lit';
 import { html, component, useState, useEffect } from 'haunted';
 import { useStyles } from '../hooks/useStyles';
-import { IAsset, IAssetFile } from '../types';
+import { IAsset, IAssetFile } from '../api/interfaces';
+
+const _asset: IAsset = {
+  blockchain: 'ada',
+  name: '',
+  asset_name: '',
+  image: '',
+  mediaType: '',
+  description: '',
+  files: [],
+  attrs: {},
+  amount: 1,
+};
 
 function AssetForm(this: any, { index }: { index: number | string | null }) {
   useStyles(this, [
@@ -55,6 +67,28 @@ function AssetForm(this: any, { index }: { index: number | string | null }) {
       .skeleton-effects {
         font-size: var(--sl-font-size-small);
       }
+
+      #additional-files-section .file-input-group {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        grid-gap: 1rem;
+        margin-top: 2rem;
+        position: relative;
+      }
+
+      #additional-attrs-section .file-input-group {
+        display: grid;
+        grid-template-columns: 1fr 2fr;
+        grid-gap: 1rem;
+        margin-top: 2rem;
+        position: relative;
+      }
+
+      .file-input-group sl-button[variant='danger'] {
+        position: absolute;
+        top: -2rem;
+        right: 0;
+      }
     `,
   ]);
 
@@ -62,17 +96,7 @@ function AssetForm(this: any, { index }: { index: number | string | null }) {
     type: 'NFT',
     variant: 'primary',
   });
-  const [asset, setAsset] = useState({
-    blockchain: 'ada',
-    name: '',
-    asset_name: '',
-    image: '',
-    mediaType: '',
-    description: '',
-    files: [],
-    attrs: {},
-    amount: 1,
-  });
+  const [asset, setAsset] = useState(_asset);
 
   const clearFile = () => {};
 
@@ -97,7 +121,7 @@ function AssetForm(this: any, { index }: { index: number | string | null }) {
   };
 
   // Return callback with the token information
-  const token = () => {
+  const tokenCallback = () => {
     const event = new CustomEvent('token', {
       bubbles: true,
       composed: true,
@@ -107,11 +131,76 @@ function AssetForm(this: any, { index }: { index: number | string | null }) {
     this.dispatchEvent(event);
   };
 
+  const addAttribute = (name: keyof Object) => {
+    const section = this.shadowRoot.querySelector('#additional-attrs-section');
+    const container = section.querySelector('.container');
+
+    if (section && container) {
+      // create object and append it to files dictionary
+      Object.defineProperty(asset.attrs, name, {
+        value: '',
+        writable: true,
+        configurable: true,
+      });
+
+      // Create input group: name, src, mediaType.
+      // Link input event to the file keys
+      const nameInput = document.createElement('sl-input');
+      nameInput.label = 'Key';
+      nameInput.type = 'text';
+      nameInput.placeholder = 'Set attribute name';
+      nameInput.value = name;
+      nameInput.setAttribute('disabled', 'disabled');
+
+      const valueInput = document.createElement('sl-input');
+      valueInput.label = 'Value';
+      valueInput.type = 'text';
+      valueInput.placeholder = 'Set the attribute value';
+
+      valueInput.addEventListener('input', (e: any) => {
+        if (e.path && e.path.length > 0) {
+          asset.attrs[name] = e.path[0].value;
+
+          // Update asset object
+          asset.attrs = { ...asset.attrs };
+          tokenCallback();
+        }
+      });
+
+      // Create group
+      const group: HTMLElement = document.createElement('div');
+      group.classList.add('file-input-group');
+      group.appendChild(nameInput);
+      group.appendChild(valueInput);
+      const delFile = document.createElement('sl-button');
+      delFile.name = 'gear';
+      delFile.variant = 'danger';
+      delFile.innerHTML = 'Delete';
+
+      group.appendChild(delFile);
+
+      // Append input group to section
+      container.appendChild(group);
+      // valueInput.focus();
+      // Remove group and file listener
+      delFile.addEventListener('click', () => {
+        container.removeChild(group);
+        // Delete
+        delete asset.attrs[name];
+
+        // Update asset object
+        asset.attrs = { ...asset.attrs };
+        tokenCallback();
+      });
+    }
+  };
+
   const addFile = () => {
     const section = this.shadowRoot.querySelector('#additional-files-section');
-    if (section) {
+    const container = section.querySelector('.container');
+    if (section && container) {
       // create object and append it to files dictionary
-      let file: IAssetFile = { name: '', src: '', mediaType: '' };
+      const file: IAssetFile = { name: '', src: '', mediaType: '' };
 
       if (!asset.files || !Array.isArray(asset.files)) {
         asset.files = [];
@@ -120,6 +209,9 @@ function AssetForm(this: any, { index }: { index: number | string | null }) {
       // Create input group: name, src, mediaType.
       // Link input event to the file keys
       const nameInput = document.createElement('sl-input');
+      nameInput.label = 'Name';
+      nameInput.type = 'text';
+      nameInput.placeholder = 'Name of the file';
       nameInput.addEventListener('input', (e: any) => {
         if (e.path && e.path.length > 0) {
           file.name = e.path[0].value;
@@ -127,6 +219,10 @@ function AssetForm(this: any, { index }: { index: number | string | null }) {
       });
 
       const srcInput = document.createElement('sl-input');
+      srcInput.label = 'Src';
+      srcInput.type = 'text';
+      srcInput.placeholder = 'Set the image source like IPFS';
+
       srcInput.addEventListener('input', (e: any) => {
         if (e.path && e.path.length > 0) {
           file.src = e.path[0].value;
@@ -134,27 +230,60 @@ function AssetForm(this: any, { index }: { index: number | string | null }) {
       });
 
       const mediaTypeInput = document.createElement('sl-input');
+      mediaTypeInput.label = 'MediaType';
+      mediaTypeInput.type = 'text';
+      mediaTypeInput.placeholder = 'Media type e.g. image/jpg';
       mediaTypeInput.addEventListener('input', (e: any) => {
         if (e.path && e.path.length > 0) {
           file.mediaType = e.path[0].value;
         }
       });
 
-      <IAsset>asset.files.push(file);
+      asset.files.push(file);
+      const fileIndx = asset.files.length - 1;
       // Create group
-      const group:HTMLElement = document.createElement('<div>')
-      group.classList.add("file-input-group")
+      const group: HTMLElement = document.createElement('div');
+      group.classList.add('file-input-group');
       group.appendChild(nameInput);
       group.appendChild(srcInput);
       group.appendChild(mediaTypeInput);
-      
+      const delFile = document.createElement('sl-button');
+      delFile.name = 'gear';
+      delFile.variant = 'danger';
+      delFile.innerHTML = 'Delete';
+
+      group.appendChild(delFile);
+
       // Append input group to section
-      section.appendChild(group);
+      container.appendChild(group);
+
+      // Remove group and file listener
+      delFile.addEventListener('click', () => {
+        container.removeChild(group);
+        // Delete
+        console.log(file, ' <======= delete this guy');
+        // asset.files = asset.files.splice(fileIndx, 1);
+        // console.log(asset.files);
+      });
+    }
+  };
+
+  const openAttrDialog = () => {
+    const dialog = this.shadowRoot.querySelector('#attr-dialog');
+    if (dialog) {
+      dialog.show();
+    }
+  };
+
+  const closeAttrDialog = () => {
+    const dialog = this.shadowRoot.querySelector('#attr-dialog');
+    if (dialog) {
+      dialog.hide();
     }
   };
 
   useEffect(() => {
-    token();
+    tokenCallback();
 
     if (asset) {
       if (asset.amount === 1) {
@@ -241,7 +370,7 @@ function AssetForm(this: any, { index }: { index: number | string | null }) {
         <sl-details summary="Do you want to specify a different token name?">
           <sl-input
             label="Asset Name"
-            placeholder="Set the asset name. Only numbers and letters. Up to 32 chars"
+            placeholder="Set the asset name. Only numbers and letters. Up to 32 characters"
             maxlength="32"
             value=${asset.asset_name}
             type="text"
@@ -322,21 +451,48 @@ function AssetForm(this: any, { index }: { index: number | string | null }) {
         </sl-textarea>
 
         <sl-details summary="Additional Files" id="additional-files-section">
-          <sl-button
-            variant="success"
-            outline
-            @click=${() => {
-              console.log('hello');
-            }}
+          <div class="container"></div>
+          <sl-button variant="success" outline @click=${addFile}
             >Add File</sl-button
           >
         </sl-details>
 
-        <sl-details summary="More Attributes">
-          Coming Soon on this interface</sl-details
+        <sl-details summary="More Attributes" id="additional-attrs-section">
+          <div class="container"></div>
+          <sl-button variant="success" outline @click=${openAttrDialog}
+            >Add Attribute</sl-button
+          ></sl-details
         >
       </section>
       <!-- <section></section> -->
+
+      <!-- Attributes dialog -->
+      <sl-dialog
+        label="Additional attribute"
+        class="dialog-focus"
+        id="attr-dialog"
+      >
+        <sl-input
+          id="attr-dialog-input"
+          autofocus
+          style="margin-bottom: 0"
+          placeholder="Set property name"
+        ></sl-input>
+        <sl-button
+          slot="footer"
+          variant="success"
+          outline
+          @click=${() => {
+            const input = this.shadowRoot.querySelector('#attr-dialog-input');
+            if (input) {
+              addAttribute(input.value);
+              input.value = '';
+              closeAttrDialog();
+            }
+          }}
+          >Add</sl-button
+        >
+      </sl-dialog>
     </div>
   `;
 }
