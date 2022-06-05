@@ -518,7 +518,7 @@ function AssetForm(this: any, { index }: { index: number | string | null }) {
         ></sl-input>
         <sl-button
           slot="footer"
-          variant="success"
+          variant="primary"
           outline
           @click=${() => {
             const input = this.shadowRoot.querySelector('#attr-dialog-input');
