@@ -127,6 +127,8 @@ function AssetForm(this: any, { index }: { index: number | string | null }) {
 
   // Return callback with the token information
   const tokenCallback = () => {
+    console.log(asset);
+    setAsset(asset)
     const event = new CustomEvent('token', {
       bubbles: true,
       composed: true,
@@ -221,6 +223,7 @@ function AssetForm(this: any, { index }: { index: number | string | null }) {
       nameInput.addEventListener('input', (e: any) => {
         if (e.path && e.path.length > 0) {
           file.name = e.path[0].value;
+          tokenCallback();
         }
       });
 
@@ -232,6 +235,7 @@ function AssetForm(this: any, { index }: { index: number | string | null }) {
       srcInput.addEventListener('input', (e: any) => {
         if (e.path && e.path.length > 0) {
           file.src = e.path[0].value;
+          tokenCallback();
         }
       });
 
@@ -242,6 +246,7 @@ function AssetForm(this: any, { index }: { index: number | string | null }) {
       mediaTypeInput.addEventListener('input', (e: any) => {
         if (e.path && e.path.length > 0) {
           file.mediaType = e.path[0].value;
+          tokenCallback();
         }
       });
 
@@ -257,14 +262,8 @@ function AssetForm(this: any, { index }: { index: number | string | null }) {
       delFile.name = 'gear';
       delFile.variant = 'danger';
       delFile.innerHTML = 'Delete';
-      // Object.defineProperty(delFile, 'index', {
-      //   writable: true,
-      //   configurable: true,
-      //   value: fileIndx,
-      // });
-      // delFile.setAttribute('index', String(fileIndx));
       delFile.size = 'small';
-      // delFile.setAttribute("outline","true")
+
       group.appendChild(delFile);
 
       // Append input group to section
