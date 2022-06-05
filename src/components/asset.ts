@@ -181,6 +181,7 @@ function AssetForm(this: any, { index }: { index: number | string | null }) {
       delFile.name = 'gear';
       delFile.variant = 'danger';
       delFile.innerHTML = 'Delete';
+      delFile.size = 'small';
 
       group.appendChild(delFile);
 
@@ -256,19 +257,32 @@ function AssetForm(this: any, { index }: { index: number | string | null }) {
       delFile.name = 'gear';
       delFile.variant = 'danger';
       delFile.innerHTML = 'Delete';
-
+      // Object.defineProperty(delFile, 'index', {
+      //   writable: true,
+      //   configurable: true,
+      //   value: fileIndx,
+      // });
+      // delFile.setAttribute('index', String(fileIndx));
+      delFile.size = 'small';
+      // delFile.setAttribute("outline","true")
       group.appendChild(delFile);
 
       // Append input group to section
       container.appendChild(group);
 
       // Remove group and file listener
-      delFile.addEventListener('click', () => {
+      delFile.addEventListener('click', (e: Event) => {
         container.removeChild(group);
+        console.log(delFile);
+        console.log(e);
         // Delete
         console.log(file, ' <======= delete this guy');
-        // asset.files = asset.files.splice(fileIndx, 1);
-        // console.log(asset.files);
+        console.log(asset.files, ' <<<==== from here...');
+        asset.files = asset.files.filter(i => i !== file);
+        tokenCallback();
+
+        console.log(asset.files);
+        console.log('we need to reindex the buttons. Do we?');
       });
     }
   };
@@ -421,7 +435,7 @@ function AssetForm(this: any, { index }: { index: number | string | null }) {
         </sl-details>
 
         <sl-input
-          label="Amount*"
+          label="Token unit amount*"
           type="number"
           placeholder="Number of copies for this token. 1 for NFTs and more than 1 for fungible tokens (FTs)"
           min="1"
@@ -490,14 +504,12 @@ function AssetForm(this: any, { index }: { index: number | string | null }) {
 
         <sl-details summary="Additional Files" id="additional-files-section">
           <div class="container"></div>
-          <sl-button variant="success" outline @click=${addFile}
-            >Add File</sl-button
-          >
+          <sl-button variant="success" @click=${addFile}>Add File</sl-button>
         </sl-details>
 
         <sl-details summary="More Attributes" id="additional-attrs-section">
           <div class="container"></div>
-          <sl-button variant="success" outline @click=${openAttrDialog}
+          <sl-button variant="success" @click=${openAttrDialog}
             >Add Attribute</sl-button
           ></sl-details
         >
@@ -519,7 +531,6 @@ function AssetForm(this: any, { index }: { index: number | string | null }) {
         <sl-button
           slot="footer"
           variant="primary"
-          outline
           @click=${() => {
             const input = this.shadowRoot.querySelector('#attr-dialog-input');
             if (input) {

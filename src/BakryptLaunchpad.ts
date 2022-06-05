@@ -335,7 +335,7 @@ function BakryptLaunchpad(this: any) {
       }
     } catch (error) {
       console.log(error);
-      notify('Unable to retrieve transaction. Internal Server Error', 'danger');
+      notify('Unable to retrieve transaction.', 'danger');
     }
 
     // Repeat call every 15 seconds
@@ -657,6 +657,7 @@ function BakryptLaunchpad(this: any) {
         ? null
         : html` <sl-button
               variant="primary"
+              class="--sl-color-emerald-300"
               @click=${() => {
                 const col: IAsset[] = collectionRequest;
                 if (
