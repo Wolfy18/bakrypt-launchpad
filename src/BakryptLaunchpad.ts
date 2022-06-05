@@ -28,6 +28,7 @@ import '@shoelace-style/shoelace/dist/components/card/card';
 import '@shoelace-style/shoelace/dist/components/dialog/dialog';
 import '@shoelace-style/shoelace/dist/components/qr-code/qr-code';
 import '@shoelace-style/shoelace/dist/components/skeleton/skeleton';
+import '@shoelace-style/shoelace/dist/components/spinner/spinner';
 
 window.customElements.define('bk-asset-form', component(AssetForm));
 
@@ -94,12 +95,19 @@ function BakryptLaunchpad(this: any) {
         max-width: 1200px;
         margin: 0 auto;
       }
+
+      :host .dialog__overlay {
+        position: fixed;
+        inset: 0px;
+        background-color: var(--sl-overlay-background-color);
+      }
     `,
   ]);
 
   const [bakryptURI, setBakryptUri] = useState('');
   const [accessToken, setAccessToken] = useState('');
   const [refreshToken, setRefreshToken] = useState('');
+  const [requestLoading, setRequestLoading] = useState(false);
 
   const [collectionRequest, setCollectionRequest] = useState([
     {
@@ -235,6 +243,7 @@ function BakryptLaunchpad(this: any) {
   const uploadFile = async (e: CustomEvent) => {
     const { payload } = e.detail;
     const { index } = e.detail;
+    setRequestLoading(true);
     try {
       const createAttachmentRequest = await fetch(`${bakryptURI}/v1/files/`, {
         method: 'POST',
@@ -254,17 +263,19 @@ function BakryptLaunchpad(this: any) {
 
           const form = this.shadowRoot.querySelectorAll('bk-asset-form');
           if (form) {
-            [...form].filter((i:any) => i.index === Number(index)).map((i: HTMLElement) => {
-              console.log("its going to pass it down...")
-              console.log(i)
-              // Object.defineProperty(i, 'detailedAsset', {
-              //   value: asset,
-              //   writable: true,
-              //   configurable: true,
-              // });
-              
-              return i;
-            });
+            [...form]
+              .filter((i: any) => i.index === Number(index))
+              .map((i: HTMLElement) => {
+                console.log('its going to pass it down...');
+                console.log(i);
+                // Object.defineProperty(i, 'detailedAsset', {
+                //   value: asset,
+                //   writable: true,
+                //   configurable: true,
+                // });
+
+                return i;
+              });
           }
         }
 
@@ -281,6 +292,7 @@ function BakryptLaunchpad(this: any) {
       console.log(error);
       notify('Unable to upload file to IPFS server', 'danger');
     }
+    setRequestLoading(false);
   };
 
   // Retrieve transaction information
@@ -347,6 +359,7 @@ function BakryptLaunchpad(this: any) {
   // Submit collection to the assets API
   const submitRequest = async (collection: IAsset[]) => {
     let showInvoice = false;
+    setRequestLoading(true);
     try {
       const submitCollectionRequest = await fetch(`${bakryptURI}/v1/assets/`, {
         method: 'POST',
@@ -403,7 +416,7 @@ function BakryptLaunchpad(this: any) {
     } catch (error) {
       notify(`Unable to submit request. Error: ${error}`, 'danger');
     }
-
+    setRequestLoading(false);
     const invDialog: any = this.shadowRoot.querySelector('sl-dialog');
     if (invDialog && showInvoice) {
       invDialog.show();
@@ -457,6 +470,7 @@ function BakryptLaunchpad(this: any) {
 
   // Submit collection to the assets API
   const submitRefund = async () => {
+    setRequestLoading(true);
     try {
       const submitRefundRequest = await fetch(
         `${bakryptURI}/v1/transactions/${
@@ -499,6 +513,7 @@ function BakryptLaunchpad(this: any) {
     } catch (error) {
       notify(`Unable to refund request. Error: ${error}`, 'danger');
     }
+    setRequestLoading(false);
   };
 
   // Add additional tab and panel
@@ -578,6 +593,15 @@ function BakryptLaunchpad(this: any) {
   }, [accessToken]);
 
   return html`
+    <!-- Spinner loader overlay -->
+    ${requestLoading
+      ? html`
+          <sl-spinner
+            style="position:absolute; right: 2rem; --track-width: 5px; font-size: 1.5rem"
+          ></sl-spinner>
+        `
+      : null}
+
     <!-- Tab groupand panel section -->
     <section class="component-section">
       <sl-tab-group>
@@ -824,6 +848,10 @@ function BakryptLaunchpad(this: any) {
         </div>
       </sl-tab-panel>
     </template>
+    <!-- Spinner loader overlay -->
+    ${requestLoading
+      ? html` <div part="overlay" class="dialog__overlay" tabindex="-1"></div> `
+      : null}
   `;
 }
 

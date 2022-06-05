@@ -70,7 +70,7 @@ function AssetForm(this: any, { index }: { index: number | string | null }) {
 
       #additional-files-section .file-input-group {
         display: grid;
-        grid-template-columns: 1fr 1fr 1fr;
+        grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
         grid-gap: 1rem;
         margin-top: 2rem;
         position: relative;
@@ -78,7 +78,7 @@ function AssetForm(this: any, { index }: { index: number | string | null }) {
 
       #additional-attrs-section .file-input-group {
         display: grid;
-        grid-template-columns: 1fr 2fr;
+        grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
         grid-gap: 1rem;
         margin-top: 2rem;
         position: relative;
@@ -128,7 +128,7 @@ function AssetForm(this: any, { index }: { index: number | string | null }) {
   // Return callback with the token information
   const tokenCallback = () => {
     console.log(asset);
-    setAsset(asset)
+    setAsset(asset);
     const event = new CustomEvent('token', {
       bubbles: true,
       composed: true,
