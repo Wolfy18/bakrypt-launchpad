@@ -1,5 +1,5 @@
 import { css } from 'lit';
-import { html, component, useEffect, useState } from 'haunted';
+import { html, component, useEffect, useState, useCallback } from 'haunted';
 import shoeStyles from '@shoelace-style/shoelace/dist/themes/light.styles';
 import { style } from './assets/css/main.css';
 import { useStyles } from './hooks/useStyles';
@@ -260,7 +260,7 @@ function BakryptLaunchpad(this: any) {
           const asset: IAsset = col[Number(index)];
           asset.image = jsonResponse.ipfs;
           asset.mediaType = jsonResponse.mimetype;
-
+          col[Number(index)] = asset;
           const form = this.shadowRoot.querySelectorAll('bk-asset-form');
           if (form) {
             [...form]
@@ -268,7 +268,10 @@ function BakryptLaunchpad(this: any) {
               .map((i: HTMLElement) => {
                 console.log('its going to pass it down...');
                 console.log(i);
-                // Object.defineProperty(i, 'detailedAsset', {
+                console.log(asset);
+                const event = new Event('token');
+                i.dispatchEvent(event);
+                // Object.defineProperty(i, 'assetDetailed', {
                 //   value: asset,
                 //   writable: true,
                 //   configurable: true,
@@ -337,6 +340,11 @@ function BakryptLaunchpad(this: any) {
         }
 
         setTransactionStatusVariant(_variant);
+
+        // Repeat call every 15 seconds
+        setTimeout(() => {
+          retrieveTransaction(uuid);
+        }, 15000);
       } else {
         const jsonResponse: ErrorResponse =
           await retrieveTransactionRequest.json();
@@ -349,15 +357,11 @@ function BakryptLaunchpad(this: any) {
       console.log(error);
       notify('Unable to retrieve transaction.', 'danger');
     }
-
-    // Repeat call every 15 seconds
-    setTimeout(() => {
-      retrieveTransaction(uuid);
-    }, 15000);
   };
 
   // Submit collection to the assets API
   const submitRequest = async (collection: IAsset[]) => {
+    console.log(collection);
     let showInvoice = false;
     setRequestLoading(true);
     try {
@@ -517,30 +521,51 @@ function BakryptLaunchpad(this: any) {
   };
 
   // Add additional tab and panel
-  const addAsset = () => {
+  const addAsset = useCallback(() => {
     const template = this.shadowRoot
       .querySelector('#asset-template')
       .cloneNode(true);
 
     const container = this.shadowRoot.querySelector('sl-tab-group');
     if (container) {
-      const indx = (collectionRequest as Array<IAsset>).length;
-      template.innerHTML = template.innerHTML.replace(/__prefix__/g, indx + 1);
+      const indx = [...container.children].filter(
+        i => i.tagName.toLowerCase() === 'sl-tab'
+      ).length;
+      template.innerHTML = template.innerHTML.replace(/__prefix__/g, indx);
       const newNode = template.content.cloneNode(true);
 
       // Set index
       newNode.querySelector('bk-asset-form').index = indx;
 
+      // Object.defineProperty(newNode.querySelector('bk-asset-form'), 'assetDetailed', {writable:true, configurable:true,});
+      // newNode.querySelector('bk-asset-form').assetDetailed = {
+      //   blockchain: 'ada',
+      //   name: '',
+      //   asset_name: '',
+      //   image: '',
+      //   mediaType: '',
+      //   description: '',
+      //   files: [],
+      //   attrs: {},
+      //   amount: 1,
+      // };
+      const linkToken = (e: CustomEvent) => {
+        if (e && e.detail && e.detail.token) {
+          const asset: IAsset = e.detail.token;
+          const col = collectionRequest as Array<IAsset>;
+          col[indx] = asset;
+          console.log(col, ' after adding! ======');
+          setCollectionRequest(col);
+        }
+      };
+
       newNode
         .querySelector('bk-asset-form')
-        .addEventListener('token', (e: CustomEvent) => {
-          if (e && e.detail && e.detail.token) {
-            const asset: IAsset = e.detail.token;
-            const col = collectionRequest as Array<IAsset>;
-            col[indx] = asset;
-            setCollectionRequest(col);
-          }
-        });
+        .removeEventListener('token', linkToken);
+
+      newNode
+        .querySelector('bk-asset-form')
+        .addEventListener('token', linkToken);
 
       newNode
         .querySelector('bk-asset-form')
@@ -556,7 +581,7 @@ function BakryptLaunchpad(this: any) {
       //   newTab.focus();
       // }
     }
-  };
+  }, [collectionRequest]);
 
   const viewTransaction = () => {
     const dialog = this.shadowRoot.querySelector('sl-dialog');
@@ -565,7 +590,59 @@ function BakryptLaunchpad(this: any) {
     }
   };
 
-  useEffect(async () => {
+  const removeTab = useCallback(
+    async (event: CustomEvent) => {
+      const tab: any = event.target;
+      const tabGroup = this.shadowRoot.querySelector('sl-tab-group');
+      if (tab) {
+        const panel = tabGroup.querySelector(
+          `sl-tab-panel[name="${tab.panel}"]`
+        );
+
+        // Show the previous tab if the tab is currently active
+        // if (tab.active) {
+        //   console.log(tab.previousElementSibling);
+        //   tabGroup.show(tab.previousElementSibling.panel);
+        // }
+
+        // Remove from colllection
+        let col = collectionRequest as IAsset[];
+
+        const indx = [...tabGroup.children]
+          .filter(i => i.tagName.toLowerCase() === 'sl-tab')
+          .indexOf(tab);
+        console.log(col, '< ==== before');
+        console.log(indx);
+        const del = col.splice(indx, 1);
+
+        if (del.length > 0) {
+          col = collectionRequest.filter(i => i !== del[0]);
+          console.log(col, '< ==== after');
+          setCollectionRequest(col);
+        }
+
+        // Remove the tab + panel
+        tab.remove();
+        panel.remove();
+
+        // Renumerate panel
+        [...tabGroup.children]
+          .filter(i => i.tagName.toLowerCase() === 'sl-tab')
+          .map((i, index) => {
+            const j = tabGroup.querySelector(`sl-tab-panel[name="${i.panel}"]`);
+
+            i.innerHTML = i.innerHTML.replace(/#[0-9]+/g, `#${index}`);
+
+            i.setAttribute('panel', index);
+            j.setAttribute('name', index);
+            return i;
+          });
+      }
+    },
+    [collectionRequest]
+  );
+
+  useEffect(() => {
     const testnet = this.getAttribute('testnet');
     setBakryptUri(
       testnet ? 'https://testnet.bakrypt.io' : 'https://bakrypt.io'
@@ -586,11 +663,14 @@ function BakryptLaunchpad(this: any) {
         refreshAccessToken(refreshToken);
       }, 3000); // Every 30 minutes
     }
+    const tabGroup = this.shadowRoot.querySelector('sl-tab-group');
     if (accessToken) {
-      // Do something over here
-      console.log(accessToken);
+      // tab group listener
+      tabGroup.addEventListener('sl-close', removeTab);
     }
-  }, [accessToken]);
+
+    return () => tabGroup.removeEventListener('sl-close', removeTab);
+  }, [accessToken, removeTab, addAsset]);
 
   return html`
     <!-- Spinner loader overlay -->
@@ -605,9 +685,9 @@ function BakryptLaunchpad(this: any) {
     <!-- Tab groupand panel section -->
     <section class="component-section">
       <sl-tab-group>
-        <sl-tab slot="nav" panel="primary">Primary Asset</sl-tab>
+        <sl-tab slot="nav" panel="0">Primary Asset</sl-tab>
 
-        <sl-tab-panel name="primary">
+        <sl-tab-panel name="0">
           <div style="text-align: left; padding-top:1rem">
             <bk-asset-form
               .index=${0}

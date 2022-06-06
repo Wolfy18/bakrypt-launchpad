@@ -1,5 +1,12 @@
 import { css } from 'lit';
-import { html, component, useState, useEffect } from 'haunted';
+import {
+  html,
+  component,
+  useState,
+  useEffect,
+  useReducer,
+  useCallback,
+} from 'haunted';
 import { useStyles } from '../hooks/useStyles';
 import { IAsset, IAssetFile } from '../adapters/interfaces';
 
@@ -15,7 +22,13 @@ const _asset: IAsset = {
   amount: 1,
 };
 
-function AssetForm(this: any, { index }: { index: number | string | null }) {
+function AssetForm(
+  this: any,
+  {
+    index,
+    assetDetailed,
+  }: { index: number | string | null; assetDetailed: IAsset }
+) {
   useStyles(this, [
     css`
       :host sl-input,
@@ -101,7 +114,7 @@ function AssetForm(this: any, { index }: { index: number | string | null }) {
     type: 'NFT',
     variant: 'primary',
   });
-  const [asset, setAsset] = useState(_asset);
+  const [asset, setAsset] = useState({ ..._asset });
 
   const clearFile = () => {};
 
@@ -127,7 +140,7 @@ function AssetForm(this: any, { index }: { index: number | string | null }) {
 
   // Return callback with the token information
   const tokenCallback = () => {
-    console.log(asset);
+    console.log(asset, '<========= from callback');
     setAsset(asset);
     const event = new CustomEvent('token', {
       bubbles: true,
@@ -221,6 +234,7 @@ function AssetForm(this: any, { index }: { index: number | string | null }) {
       nameInput.type = 'text';
       nameInput.placeholder = 'Name of the file';
       nameInput.addEventListener('input', (e: any) => {
+        console.log("corrio aqui ---------------------------------<<<<<<")
         if (e.path && e.path.length > 0) {
           file.name = e.path[0].value;
           tokenCallback();
@@ -301,7 +315,8 @@ function AssetForm(this: any, { index }: { index: number | string | null }) {
   };
 
   useEffect(() => {
-    tokenCallback();
+    console.log(asset);
+    console.log(assetDetailed, ' <=========== ');
 
     if (asset) {
       if (asset.amount === 1) {
@@ -310,7 +325,15 @@ function AssetForm(this: any, { index }: { index: number | string | null }) {
         setTokenType({ type: 'Fungible Token', variant: 'warning' });
       }
     }
-  }, [asset]);
+
+    console.log('Checking for existence...');
+    if (assetDetailed) {
+      console.log(assetDetailed, ' <=========== this is the assetdetailed');
+      setAsset(assetDetailed);
+    }
+
+    tokenCallback();
+  }, [asset, assetDetailed]);
 
   return html`
     <div class="container asset">
@@ -544,4 +567,5 @@ function AssetForm(this: any, { index }: { index: number | string | null }) {
     </div>
   `;
 }
+
 export { AssetForm };
