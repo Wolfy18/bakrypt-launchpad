@@ -98,6 +98,14 @@ function AssetForm(
         position: relative;
       }
 
+      #additional-files-section .file-input-helpers {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        grid-gap: 1rem;
+        margin-top: 2rem;
+        position: relative;
+      }
+
       .file-input-group sl-button[variant='danger'] {
         position: absolute;
         top: -2rem;
@@ -275,6 +283,7 @@ function AssetForm(
 
       // Add file upload group
       const btnGroup = document.createElement('sl-button-group');
+      btnGroup.classList.add('file-input-helpers');
       const fileInputForm = document.createElement('input');
       fileInputForm.type = 'file';
       const uploadFileBtn = document.createElement('sl-button');
