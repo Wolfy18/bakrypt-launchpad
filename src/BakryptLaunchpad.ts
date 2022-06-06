@@ -29,6 +29,8 @@ import '@shoelace-style/shoelace/dist/components/dialog/dialog';
 import '@shoelace-style/shoelace/dist/components/qr-code/qr-code';
 import '@shoelace-style/shoelace/dist/components/skeleton/skeleton';
 import '@shoelace-style/shoelace/dist/components/spinner/spinner';
+import '@shoelace-style/shoelace/dist/components/menu/menu';
+import '@shoelace-style/shoelace/dist/components/menu-item/menu-item';
 
 window.customElements.define('bk-asset-form', component(AssetForm));
 
@@ -80,8 +82,7 @@ function BakryptLaunchpad(this: any) {
       :host sl-input,
       :host input,
       :host sl-textarea,
-      :host sl-details,
-      :host sl-qr-code {
+      :host sl-details {
         margin-bottom: 2rem;
       }
 
@@ -243,7 +244,7 @@ function BakryptLaunchpad(this: any) {
   const uploadFile = async (e: any) => {
     const { payload } = e.detail;
     const { input } = e.detail;
-    console.log(input)
+    console.log(input);
     setRequestLoading(true);
     try {
       const createAttachmentRequest = await fetch(`${bakryptURI}/v1/files/`, {
@@ -258,10 +259,10 @@ function BakryptLaunchpad(this: any) {
         const jsonResponse: IFile = await createAttachmentRequest.json();
         if (input) {
           input.value = jsonResponse.ipfs;
-          
-          const inputEvent = new Event('input')
-          input.dispatchEvent(inputEvent)
-        } 
+
+          const inputEvent = new Event('input');
+          input.dispatchEvent(inputEvent);
+        }
         // if (Number(index) > -1) {
         //   const col = collectionRequest as IAsset[];
         //   const asset: IAsset = col[Number(index)];
@@ -824,24 +825,20 @@ function BakryptLaunchpad(this: any) {
     <sl-dialog label="Invoice" class="dialog-width" style="--width: 80vw;">
       <div
         style="
-        margin-top:2rem;
-        display: grid;
-        grid-template-columns: 1fr;
-        grid-gap: 1rem;
-        align-items:center
       "
       >
         <div
-          style="display:grid; grid-template-columns: repeat(auto-fit, minmax(305px, 1fr)); grid-gap: 0.5rem; align-items:center"
+          style="display:grid; grid-template-columns: repeat(auto-fit, minmax(305px, 1fr)); grid-gap: 0.5rem; align-items:center; margin-bottom: 2rem"
         >
-          <sl-qr-code
-            value=${transaction
-              ? (<ITransaction>transaction).deposit_address
-              : 'Not found'}
-            label="Scan this code for the deposit_address!"
-          ></sl-qr-code>
+          <div style="text-align:center">
+            <sl-qr-code
+              value=${transaction
+                ? (<ITransaction>transaction).deposit_address
+                : 'Not found'}
+              label="Scan this code for the deposit_address!"
+            ></sl-qr-code>
+          </div>
           <sl-alert variant="warning" open>
-            <sl-icon slot="icon" name="exclamation-triangle"></sl-icon>
             <strong>DO NOT TRANSFER FUNDS FROM AN EXCHANGE!</strong> <br />
             We will send all tokens and change to the payor's address; meaning
             that the payment must be done from a wallet that you can control and
@@ -849,6 +846,12 @@ function BakryptLaunchpad(this: any) {
           </sl-alert>
         </div>
         <div>
+          <sl-badge
+            style="margin-bottom: 1rem"
+            .pulse=${true}
+            variant=${transactionStatusVariant}
+            >${transaction ? (<ITransaction>transaction).status : ''}</sl-badge
+          >
           <sl-input
             maxlength="255"
             label="Policy ID"
@@ -887,42 +890,69 @@ function BakryptLaunchpad(this: any) {
                 readonly
                 filled
               ></sl-input>`}
+          <h4>Summary</h4>
+          <sl-menu style="width: 100%">
+            <sl-menu-item>
+              <strong>Minting:</strong>
+              <br />
+              <small
+                >** These tokens are returned to the payor's wallet
+                automatically. **</small
+              >
+              <sl-menu style="width: 100%">
+                <sl-menu-item
+                  >Number of assets: ${collectionRequest.length}</sl-menu-item
+                >
+                <sl-menu-item
+                  >Bond per asset:
+                  ${transaction && (<ITransaction>transaction).cost
+                    ? collectionRequest.length * Number(1.95)
+                    : null}</sl-menu-item
+                >
+                <sl-menu-item
+                  >Change:
+                  ${transaction && (<ITransaction>transaction).cost
+                    ? (
+                        Number((<ITransaction>transaction).cost) -
+                        Number((<ITransaction>transaction).blockchain_fee) -
+                        Number((<ITransaction>transaction).convenience_fee) -
+                        Number(collectionRequest.length * Number(1.95))
+                      ).toFixed(6)
+                    : null}</sl-menu-item
+                >
+                <sl-divider></sl-divider>
+                <sl-menu-item
+                  >Total Change:
+                  ${transaction && (<ITransaction>transaction).cost
+                    ? `${Number(
+                        collectionRequest.length * Number(1.95) +
+                          Number((<ITransaction>transaction).cost) -
+                          Number((<ITransaction>transaction).blockchain_fee) -
+                          Number((<ITransaction>transaction).convenience_fee) -
+                          Number(collectionRequest.length * Number(1.95))
+                      ).toFixed(6)}`
+                    : null}</sl-menu-item
+                >
+              </sl-menu></sl-menu-item
+            >
+            <sl-menu-item
+              ><strong>Convenience Fee</strong>:
+              ${transaction
+                ? (<ITransaction>transaction).convenience_fee
+                : ''}</sl-menu-item
+            >
+            <sl-menu-item
+              ><strong>Blockchain Fee</strong>:
+              ${transaction
+                ? (<ITransaction>transaction).blockchain_fee
+                : ''}</sl-menu-item
+            >
+          </sl-menu>
+
+          <sl-divider></sl-divider>
         </div>
       </div>
 
-      <div
-        style="display: flex; justify-content:space-between; align-items:center"
-      >
-        <sl-badge
-          style="margin-bottom: 1rem"
-          variant=${transactionStatusVariant}
-          >${transaction ? (<ITransaction>transaction).status : ''}</sl-badge
-        >
-        <div>
-          ${transaction &&
-          (<ITransaction>transaction).status &&
-          ['rejected', 'error'].includes((<ITransaction>transaction).status)
-            ? html`
-                <sl-button variant="primary" @click=${submitRetry}
-                  >Retry</sl-button
-                >
-              `
-            : null}
-          ${transaction &&
-          (<ITransaction>transaction).status &&
-          (<ITransaction>transaction).status !== 'confirmed'
-            ? html`
-                <sl-button
-                  variant="warning"
-                  outline
-                  @click=${submitRefund}
-                  style="margin-left:1rem"
-                  >Submit Refund</sl-button
-                >
-              `
-            : null}
-        </div>
-      </div>
       <sl-textarea
         label="Status Description"
         value=${transaction
@@ -932,6 +962,34 @@ function BakryptLaunchpad(this: any) {
         filled
       >
       </sl-textarea>
+      <div>
+        ${transaction &&
+        (<ITransaction>transaction).status &&
+        ['rejected', 'error'].includes((<ITransaction>transaction).status)
+          ? html`
+              <sl-button variant="primary" @click=${submitRetry}
+                >Retry</sl-button
+              >
+            `
+          : null}
+        ${transaction &&
+        (<ITransaction>transaction).status &&
+        (<ITransaction>transaction).status !== 'confirmed'
+          ? html`
+              <sl-button
+                variant="warning"
+                outline
+                @click=${() => {
+                  if (confirm('Would you like to refund the transaction?')) {
+                    submitRefund();
+                  }
+                }}
+                style="margin-left:1rem"
+                >Submit Refund</sl-button
+              >
+            `
+          : null}
+      </div>
     </sl-dialog>
 
     <!-- Alert container -->
