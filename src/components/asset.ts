@@ -234,7 +234,6 @@ function AssetForm(
       nameInput.type = 'text';
       nameInput.placeholder = 'Name of the file';
       nameInput.addEventListener('input', (e: any) => {
-        console.log('corrio aqui ---------------------------------<<<<<<');
         if (e.path && e.path.length > 0) {
           file.name = e.path[0].value;
           tokenCallback();
