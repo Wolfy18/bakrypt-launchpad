@@ -526,9 +526,9 @@ function BakryptLaunchpad(this: any) {
       .querySelector('#asset-template')
       .cloneNode(true);
 
-    const container = this.shadowRoot.querySelector('sl-tab-group');
-    if (container) {
-      const indx = [...container.children].filter(
+    const tabGroup = this.shadowRoot.querySelector('sl-tab-group');
+    if (tabGroup) {
+      const indx = [...tabGroup.children].filter(
         i => i.tagName.toLowerCase() === 'sl-tab'
       ).length;
       template.innerHTML = template.innerHTML.replace(/__prefix__/g, indx);
@@ -560,13 +560,13 @@ function BakryptLaunchpad(this: any) {
         .addEventListener('upload-file', uploadFile);
 
       // newTab.active = true;
-      container.appendChild(newNode);
+      tabGroup.appendChild(newNode);
 
       // Renumerate panel
-      [...container.children]
+      const tabs = [...tabGroup.children]
         .filter(i => i.tagName.toLowerCase() === 'sl-tab')
         .map((i, index) => {
-          const j = container.querySelector(`sl-tab-panel[name="${i.panel}"]`);
+          const j = tabGroup.querySelector(`sl-tab-panel[name="${i.panel}"]`);
 
           i.innerHTML = i.innerHTML.replace(/#[0-9]+/g, `#${index + 1}`);
 
@@ -576,10 +576,16 @@ function BakryptLaunchpad(this: any) {
         });
 
       // click the new tab
-      // const newTab = container.shadowRoot.querySelector('sl-tab');
-      // console.log(newTab);
-      // if(newTab){
-      //   newTab.focus();
+      // const newTab = tabs.pop();
+      // if (newTab) {
+      //   console.log(tabGroup);
+      //   console.log(newTab);
+      //   console.log(newTab.panel);
+      //   console.log(tabGroup.tabs);
+      //   console.log(
+      //     tabGroup.tabs.find((i: any) => i.panel === String(newTab.panel))
+      //   );
+      //   tabGroup.setActiveTab(newTab, { scrollBehavior: 'smooth' });
       // }
     }
   };
