@@ -108,7 +108,7 @@ function AssetForm(
 
       .file-input-group sl-button[variant='danger'] {
         position: absolute;
-        top: -2rem;
+        top: -1.5rem;
         right: 0;
       }
 
@@ -320,6 +320,8 @@ function AssetForm(
       // Remove group and file listener
       delFile.addEventListener('click', (e: Event) => {
         container.removeChild(group);
+        container.removeChild(btnGroup);
+        container.removeChild(divider);
         console.log(delFile);
         console.log(e);
         // Delete

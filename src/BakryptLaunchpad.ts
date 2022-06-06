@@ -126,7 +126,7 @@ function BakryptLaunchpad(this: any) {
     rate: '',
     address: '',
   });
-  const [transaction, setTransaction] = useState();
+  const [transaction, setTransaction] = useState(testTransaction);
   const [transactionStatusVariant, setTransactionStatusVariant] = useState(
     transaction ? 'primary' : 'neutral'
   );
@@ -687,7 +687,7 @@ function BakryptLaunchpad(this: any) {
     if (refreshToken) {
       setTimeout(() => {
         refreshAccessToken(refreshToken);
-      }, 3000); // Every 30 minutes
+      }, 300000); // Every 30 minutes
     }
     const tabGroup = this.shadowRoot.querySelector('sl-tab-group');
     if (accessToken) {
@@ -723,9 +723,7 @@ function BakryptLaunchpad(this: any) {
 
         <sl-tab-panel name="0">
           <div style="text-align: left; padding-top:1rem">
-            <bk-asset-form
-              .index=${0}
-            ></bk-asset-form>
+            <bk-asset-form .index=${0}></bk-asset-form>
           </div>
         </sl-tab-panel>
       </sl-tab-group>
@@ -823,31 +821,32 @@ function BakryptLaunchpad(this: any) {
     </section>
 
     <!-- Transaction Dialog -->
-    <sl-dialog label="Invoice" class="dialog-width" style="--width: 50vw;">
-      <sl-alert variant="warning" style="" open>
-        <sl-icon slot="icon" name="exclamation-triangle"></sl-icon>
-        <strong>DO NOT TRANSFER FUNDS FROM AN EXCHANGE!</strong> <br />
-        We will send all tokens and change to the payor's address; meaning that
-        the payment must be done from a wallet that you can control and its
-        capable of manage native tokens.
-      </sl-alert>
-
+    <sl-dialog label="Invoice" class="dialog-width" style="--width: 80vw;">
       <div
         style="
         margin-top:2rem;
         display: grid;
-        grid-template-columns: 1fr 3fr;
+        grid-template-columns: 1fr;
         grid-gap: 1rem;
         align-items:center
       "
       >
-        <div>
+        <div
+          style="display:grid; grid-template-columns: repeat(auto-fit, minmax(305px, 1fr)); grid-gap: 0.5rem; align-items:center"
+        >
           <sl-qr-code
             value=${transaction
               ? (<ITransaction>transaction).deposit_address
               : 'Not found'}
             label="Scan this code for the deposit_address!"
           ></sl-qr-code>
+          <sl-alert variant="warning" open>
+            <sl-icon slot="icon" name="exclamation-triangle"></sl-icon>
+            <strong>DO NOT TRANSFER FUNDS FROM AN EXCHANGE!</strong> <br />
+            We will send all tokens and change to the payor's address; meaning
+            that the payment must be done from a wallet that you can control and
+            its capable of manage native tokens.
+          </sl-alert>
         </div>
         <div>
           <sl-input
