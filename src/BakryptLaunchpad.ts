@@ -537,6 +537,24 @@ function BakryptLaunchpad(this: any) {
       // Set index
       newNode.querySelector('bk-asset-form').index = indx;
 
+      const _asset: IAsset = {
+        blockchain: 'ada',
+        name: '',
+        asset_name: '',
+        image: '',
+        mediaType: '',
+        description: '',
+        files: [],
+        attrs: {},
+        amount: 1,
+      };
+
+      Object.defineProperty(
+        newNode.querySelector('bk-asset-form'),
+        'assetDetailed',
+        { writable: true, configurable: true, value: _asset }
+      );
+
       newNode
         .querySelector('bk-asset-form')
         .addEventListener('upload-file', uploadFile);

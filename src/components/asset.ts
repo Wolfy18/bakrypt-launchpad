@@ -114,7 +114,7 @@ function AssetForm(
     type: 'NFT',
     variant: 'primary',
   });
-  const [asset, setAsset] = useState({ ..._asset });
+  const [asset, setAsset] = useState(assetDetailed || { ..._asset });
 
   const clearFile = () => {};
 
@@ -326,14 +326,14 @@ function AssetForm(
       }
     }
 
-    console.log('Checking for existence...');
-    if (assetDetailed) {
-      console.log(assetDetailed, ' <=========== this is the assetdetailed');
-      setAsset(assetDetailed);
-    }
+    // console.log('Checking for existence...');
+    // if (assetDetailed) {
+    //   console.log(assetDetailed, ' <=========== this is the assetdetailed');
+    //   setAsset(assetDetailed);
+    // }
 
     tokenCallback();
-  }, [index, asset, assetDetailed]);
+  }, [index, asset]);
 
   return html`
     <sl-input
