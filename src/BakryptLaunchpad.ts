@@ -822,11 +822,19 @@ function BakryptLaunchpad(this: any) {
     </section>
 
     <!-- Transaction Dialog -->
-    <sl-dialog label="Invoice" class="dialog-width" style="--width: 80vw;">
+    <sl-dialog label="Invoice Details" class="dialog-width" style="--width: 80vw;">
       <div
         style="
       "
       >
+        <sl-input
+          maxlength="255"
+          label="Transaction UUID"
+          value=${transaction ? (<ITransaction>transaction).uuid : ''}
+          type="text"
+          readonly
+          filled
+        ></sl-input>
         <div
           style="display:grid; grid-template-columns: repeat(auto-fit, minmax(305px, 1fr)); grid-gap: 0.5rem; align-items:center; margin-bottom: 2rem"
         >
@@ -847,7 +855,7 @@ function BakryptLaunchpad(this: any) {
         </div>
         <div>
           <sl-badge
-            style="margin-bottom: 1rem"
+            style="margin-bottom: 2rem"
             .pulse=${true}
             variant=${transactionStatusVariant}
             >${transaction ? (<ITransaction>transaction).status : ''}</sl-badge
@@ -861,17 +869,26 @@ function BakryptLaunchpad(this: any) {
             filled
           ></sl-input>
           ${transaction && (<ITransaction>transaction).status !== 'confirmed'
-            ? html` <sl-input
-                maxlength="255"
-                label="Deposit Address"
-                value=${transaction
-                  ? (<ITransaction>transaction).deposit_address
-                  : ''}
-                type="password"
-                readonly
-                filled
-                toggle-password
-              ></sl-input>`
+            ? html` <small style="float:right">Click to copy</small
+                ><sl-input
+                  maxlength="255"
+                  label="Deposit Address"
+                  value=${transaction
+                    ? (<ITransaction>transaction).deposit_address
+                    : ''}
+                  type="password"
+                  readonly
+                  filled
+                  toggle-password
+                  @click=${(e: any) => {
+                    if (e.path && e.path.length > 0) {
+                      const depAddr = e.path[0].value;
+                      navigator.clipboard.writeText(depAddr);
+                      notify('Copy to clipboard!', 'success');
+                    }
+                    return false;
+                  }}
+                ></sl-input>`
             : null}
           ${transaction && (<ITransaction>transaction).status !== 'confirmed'
             ? html` <sl-input
