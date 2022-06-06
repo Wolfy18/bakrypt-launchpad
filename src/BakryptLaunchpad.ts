@@ -520,7 +520,77 @@ function BakryptLaunchpad(this: any) {
     setRequestLoading(false);
   };
 
-  const removeAsset = useCallback(
+  // Add additional tab and panel
+  const addAsset = () => {
+    const template = this.shadowRoot
+      .querySelector('#asset-template')
+      .cloneNode(true);
+
+    const container = this.shadowRoot.querySelector('sl-tab-group');
+    if (container) {
+      const indx = [...container.children].filter(
+        i => i.tagName.toLowerCase() === 'sl-tab'
+      ).length;
+      template.innerHTML = template.innerHTML.replace(/__prefix__/g, indx);
+      const newNode = template.content.cloneNode(true);
+
+      // Set index
+      newNode.querySelector('bk-asset-form').index = indx;
+
+      // Object.defineProperty(newNode.querySelector('bk-asset-form'), 'assetDetailed', {writable:true, configurable:true,});
+      // newNode.querySelector('bk-asset-form').assetDetailed = {
+      //   blockchain: 'ada',
+      //   name: '',
+      //   asset_name: '',
+      //   image: '',
+      //   mediaType: '',
+      //   description: '',
+      //   files: [],
+      //   attrs: {},
+      //   amount: 1,
+      // };
+      const linkToken = (e: CustomEvent) => {
+        if (e && e.detail && e.detail.token) {
+          const asset: IAsset = e.detail.token;
+          const col = collectionRequest as Array<IAsset>;
+          col[indx] = asset;
+          console.log(col, ' after adding! ======');
+          setCollectionRequest(col);
+        }
+      };
+
+      newNode
+        .querySelector('bk-asset-form')
+        .removeEventListener('token', linkToken);
+
+      newNode
+        .querySelector('bk-asset-form')
+        .addEventListener('token', linkToken);
+
+      newNode
+        .querySelector('bk-asset-form')
+        .addEventListener('upload-file', uploadFile);
+
+      // newTab.active = true;
+      container.appendChild(newNode);
+
+      // click the new tab
+      // const newTab = container.shadowRoot.querySelector('sl-tab');
+      // console.log(newTab);
+      // if(newTab){
+      //   newTab.focus();
+      // }
+    }
+  };
+
+  const viewTransaction = () => {
+    const dialog = this.shadowRoot.querySelector('sl-dialog');
+    if (dialog) {
+      dialog.show();
+    }
+  };
+
+  const removeTab = useCallback(
     async (event: CustomEvent) => {
       const tab: any = event.target;
       const tabGroup = this.shadowRoot.querySelector('sl-tab-group');
@@ -528,14 +598,12 @@ function BakryptLaunchpad(this: any) {
         const panel = tabGroup.querySelector(
           `sl-tab-panel[name="${tab.panel}"]`
         );
-        console.log(tab);
-        console.log(tab.active);
+
         // Show the previous tab if the tab is currently active
-        if (tab.active) {
-          console.log(tab);
-          console.log(tab.previousElementSibling);
-          tabGroup.show(tab.previousElementSibling.panel);
-        }
+        // if (tab.active) {
+        //   console.log(tab.previousElementSibling);
+        //   tabGroup.show(tab.previousElementSibling.panel);
+        // }
 
         // Remove from colllection
         let col = collectionRequest as IAsset[];
@@ -574,67 +642,6 @@ function BakryptLaunchpad(this: any) {
     [collectionRequest]
   );
 
-  // Add additional tab and panel
-  const addAsset = useCallback(async () => {
-    const template = this.shadowRoot
-      .querySelector('#asset-template')
-      .cloneNode(true);
-
-    const container = this.shadowRoot.querySelector('sl-tab-group');
-    if (container) {
-      const indx = [...container.children].filter(
-        i => i.tagName.toLowerCase() === 'sl-tab'
-      ).length;
-      template.innerHTML = template.innerHTML.replace(/__prefix__/g, indx);
-      const newNode = template.content.cloneNode(true);
-
-      // Set index
-      newNode.querySelector('bk-asset-form').index = indx;
-
-      const linkToken = (e: CustomEvent) => {
-        if (e && e.detail && e.detail.token) {
-          const asset: IAsset = e.detail.token;
-          const col = collectionRequest as Array<IAsset>;
-          col[indx] = asset;
-          console.log(col, ' after adding! ======');
-          setCollectionRequest(col);
-        }
-      };
-
-      newNode
-        .querySelector('bk-asset-form')
-        .removeEventListener('token', linkToken);
-
-      newNode
-        .querySelector('bk-asset-form')
-        .addEventListener('token', linkToken);
-
-      newNode
-        .querySelector('bk-asset-form')
-        .addEventListener('upload-file', uploadFile);
-
-      newNode.querySelector('sl-tab').addEventListener('sl-close', removeAsset);
-
-      console.log(newNode.querySelector('sl-tab'));
-      // newTab.active = true;
-      container.appendChild(newNode);
-
-      // click the new tab
-      // const newTab = container.shadowRoot.querySelector('sl-tab');
-      // console.log(newTab);
-      // if(newTab){
-      //   newTab.focus();
-      // }
-    }
-  }, [collectionRequest]);
-
-  const viewTransaction = () => {
-    const dialog = this.shadowRoot.querySelector('sl-dialog');
-    if (dialog) {
-      dialog.show();
-    }
-  };
-
   useEffect(() => {
     const testnet = this.getAttribute('testnet');
     setBakryptUri(
@@ -659,11 +666,11 @@ function BakryptLaunchpad(this: any) {
     const tabGroup = this.shadowRoot.querySelector('sl-tab-group');
     if (accessToken) {
       // tab group listener
-      // tabGroup.addEventListener('sl-close', removeAsset);
+      tabGroup.addEventListener('sl-close', removeTab);
     }
 
-    // return () => tabGroup.removeEventListener('sl-close', removeAsset);
-  }, [accessToken]);
+    return () => tabGroup.removeEventListener('sl-close', removeTab);
+  }, [accessToken, removeTab]);
 
   return html`
     <!-- Spinner loader overlay -->
