@@ -240,9 +240,10 @@ function BakryptLaunchpad(this: any) {
   };
 
   // Upload file to IPFS and return the generated attachment information
-  const uploadFile = async (e: CustomEvent) => {
+  const uploadFile = async (e: any) => {
     const { payload } = e.detail;
-    const { index } = e.detail;
+    const { input } = e.detail;
+    console.log(input)
     setRequestLoading(true);
     try {
       const createAttachmentRequest = await fetch(`${bakryptURI}/v1/files/`, {
@@ -255,32 +256,38 @@ function BakryptLaunchpad(this: any) {
 
       if (createAttachmentRequest.ok) {
         const jsonResponse: IFile = await createAttachmentRequest.json();
-        if (Number(index) > -1) {
-          const col = collectionRequest as IAsset[];
-          const asset: IAsset = col[Number(index)];
-          asset.image = jsonResponse.ipfs;
-          asset.mediaType = jsonResponse.mimetype;
-          col[Number(index)] = asset;
-          const form = this.shadowRoot.querySelectorAll('bk-asset-form');
-          if (form) {
-            [...form]
-              .filter((i: any) => i.index === Number(index))
-              .map((i: HTMLElement) => {
-                console.log('its going to pass it down...');
-                console.log(i);
-                console.log(asset);
-                const event = new Event('token');
-                i.dispatchEvent(event);
-                // Object.defineProperty(i, 'assetDetailed', {
-                //   value: asset,
-                //   writable: true,
-                //   configurable: true,
-                // });
+        if (input) {
+          input.value = jsonResponse.ipfs;
+          
+          const inputEvent = new Event('input')
+          input.dispatchEvent(inputEvent)
+        } 
+        // if (Number(index) > -1) {
+        //   const col = collectionRequest as IAsset[];
+        //   const asset: IAsset = col[Number(index)];
+        //   asset.image = jsonResponse.ipfs;
+        //   asset.mediaType = jsonResponse.mimetype;
+        //   col[Number(index)] = asset;
+        //   const form = this.shadowRoot.querySelectorAll('bk-asset-form');
+        //   if (form) {
+        //     [...form]
+        //       .filter((i: any) => i.index === Number(index))
+        //       .map((i: HTMLElement) => {
+        //         console.log('its going to pass it down...');
+        //         console.log(i);
+        //         console.log(asset);
+        //         const event = new Event('token');
+        //         i.dispatchEvent(event);
+        //         // Object.defineProperty(i, 'assetDetailed', {
+        //         //   value: asset,
+        //         //   writable: true,
+        //         //   configurable: true,
+        //         // });
 
-                return i;
-              });
-          }
-        }
+        //         return i;
+        //       });
+        //   }
+        // }
 
         notify('Successfully uploaded file to IPFS', 'success');
       } else {
@@ -555,9 +562,9 @@ function BakryptLaunchpad(this: any) {
         { writable: true, configurable: true, value: _asset }
       );
 
-      newNode
-        .querySelector('bk-asset-form')
-        .addEventListener('upload-file', uploadFile);
+      // newNode
+      //   .querySelector('bk-asset-form')
+      //   .addEventListener('upload-file', uploadFile);
 
       // newTab.active = true;
       tabGroup.appendChild(newNode);
@@ -689,11 +696,13 @@ function BakryptLaunchpad(this: any) {
 
       // Add event listeners
       window.addEventListener('token', pushToken);
+      window.addEventListener('upload-file', uploadFile);
     }
 
     return () => {
       tabGroup.removeEventListener('sl-close', removeAsset);
       window.removeEventListener('token', pushToken);
+      window.removeEventListener('upload-file', uploadFile);
     };
   }, [accessToken]);
 
@@ -716,7 +725,6 @@ function BakryptLaunchpad(this: any) {
           <div style="text-align: left; padding-top:1rem">
             <bk-asset-form
               .index=${0}
-              @upload-file=${uploadFile}
             ></bk-asset-form>
           </div>
         </sl-tab-panel>

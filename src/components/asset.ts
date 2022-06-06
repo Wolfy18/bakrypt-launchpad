@@ -9,6 +9,7 @@ import {
 } from 'haunted';
 import { useStyles } from '../hooks/useStyles';
 import { IAsset, IAssetFile } from '../adapters/interfaces';
+import SlInput from "@shoelace-style/shoelace/dist/components/input/input";
 
 const _asset: IAsset = {
   blockchain: 'ada',
@@ -118,11 +119,14 @@ function AssetForm(
 
   const clearFile = () => {};
 
-  const requestUpload = () => {
+  const requestUpload = (
+    inputfile: any,
+    input: HTMLInputElement | SlInput
+  ) => {
     const payload = new FormData();
 
-    const inputfile: HTMLInputElement =
-      this.shadowRoot.querySelector('#ipfs-fileinput');
+    // const inputfile: HTMLInputElement =
+    //   this.shadowRoot.querySelector(fileInput.id);
 
     if (inputfile && inputfile.files) {
       // do
@@ -132,7 +136,7 @@ function AssetForm(
     const event = new CustomEvent('upload-file', {
       bubbles: true,
       composed: true,
-      detail: { payload, index },
+      detail: { payload, index, input },
     });
 
     this.dispatchEvent(event);
@@ -271,6 +275,28 @@ function AssetForm(
       group.appendChild(nameInput);
       group.appendChild(srcInput);
       group.appendChild(mediaTypeInput);
+
+      // Add file upload group
+      const btnGroup = document.createElement('sl-button-group');
+      const fileInputForm = document.createElement('input');
+      fileInputForm.type = 'file';
+      const uploadFileBtn = document.createElement('sl-button');
+      uploadFileBtn.addEventListener('click', () => {
+        requestUpload(fileInputForm, srcInput);
+      });
+      uploadFileBtn.variant = 'primary';
+      uploadFileBtn.innerHTML = 'Upload file to IPFS';
+      const clearFileBtn = document.createElement('sl-button');
+      clearFileBtn.variant = 'warning';
+      clearFileBtn.setAttribute('outline', '');
+      clearFileBtn.addEventListener('click', clearFile);
+      clearFileBtn.innerHTML = 'Clear File';
+      btnGroup.appendChild(fileInputForm);
+      btnGroup.appendChild(uploadFileBtn);
+      btnGroup.appendChild(clearFileBtn);
+
+      container.appendChild(btnGroup);
+
       const delFile = document.createElement('sl-button');
       delFile.name = 'gear';
       delFile.variant = 'danger';
@@ -314,7 +340,7 @@ function AssetForm(
   };
 
   useEffect(() => {
-    console.log(index, "<===== INDEX")
+    console.log(index, '<===== INDEX');
     console.log(asset);
     console.log(assetDetailed, ' <=========== assetDEtailed');
 
@@ -400,6 +426,7 @@ function AssetForm(
         ></sl-input>
 
         <sl-input
+          id="cover-image-input"
           label="Cover Image*"
           type="url"
           placeholder="Which image would you like to use? IPFS links are recommended"
@@ -422,7 +449,17 @@ function AssetForm(
           <input type="file" id="ipfs-fileinput" />
 
           <sl-button-group>
-            <sl-button variant="primary" @click=${requestUpload}
+            <sl-button
+              variant="primary"
+              @click=${() => {
+                const input =
+                  this.shadowRoot.querySelector('#cover-image-input');
+                const fileInput =
+                  this.shadowRoot.querySelector('#ipfs-fileinput');
+                if (input) {
+                  requestUpload(fileInput, input);
+                }
+              }}
               >Upload file to IPFS</sl-button
             >
             <sl-button variant="warning" outline @click=${clearFile}
