@@ -9,7 +9,7 @@ import {
 } from 'haunted';
 import { useStyles } from '../hooks/useStyles';
 import { IAsset, IAssetFile } from '../adapters/interfaces';
-import SlInput from "@shoelace-style/shoelace/dist/components/input/input";
+import SlInput from '@shoelace-style/shoelace/dist/components/input/input';
 
 const _asset: IAsset = {
   blockchain: 'ada',
@@ -84,7 +84,7 @@ function AssetForm(
 
       #additional-files-section .file-input-group {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
         grid-gap: 1rem;
         margin-top: 2rem;
         position: relative;
@@ -119,10 +119,7 @@ function AssetForm(
 
   const clearFile = () => {};
 
-  const requestUpload = (
-    inputfile: any,
-    input: HTMLInputElement | SlInput
-  ) => {
+  const requestUpload = (inputfile: any, input: HTMLInputElement | SlInput) => {
     const payload = new FormData();
 
     // const inputfile: HTMLInputElement =
@@ -295,8 +292,6 @@ function AssetForm(
       btnGroup.appendChild(uploadFileBtn);
       btnGroup.appendChild(clearFileBtn);
 
-      container.appendChild(btnGroup);
-
       const delFile = document.createElement('sl-button');
       delFile.name = 'gear';
       delFile.variant = 'danger';
@@ -307,6 +302,11 @@ function AssetForm(
 
       // Append input group to section
       container.appendChild(group);
+
+      const divider = document.createElement('sl-divider');
+      divider.setAttribute('style', '--spacing:2rem');
+      container.appendChild(btnGroup);
+      container.appendChild(divider);
 
       // Remove group and file listener
       delFile.addEventListener('click', (e: Event) => {
