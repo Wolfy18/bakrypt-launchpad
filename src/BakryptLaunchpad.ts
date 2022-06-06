@@ -127,7 +127,7 @@ function BakryptLaunchpad(this: any) {
     rate: '',
     address: '',
   });
-  const [transaction, setTransaction] = useState(testTransaction);
+  const [transaction, setTransaction] = useState();
   const [transactionStatusVariant, setTransactionStatusVariant] = useState(
     transaction ? 'primary' : 'neutral'
   );
@@ -822,11 +822,18 @@ function BakryptLaunchpad(this: any) {
     </section>
 
     <!-- Transaction Dialog -->
-    <sl-dialog label="Invoice Details" class="dialog-width" style="--width: 80vw;">
+    <sl-dialog
+      label="Invoice Details"
+      class="dialog-width"
+      style="--width: 80vw;"
+    >
       <div
         style="
       "
       >
+        <small style="float:right"
+          >Save this value for verification purposes</small
+        >
         <sl-input
           maxlength="255"
           label="Transaction UUID"
@@ -984,7 +991,10 @@ function BakryptLaunchpad(this: any) {
         (<ITransaction>transaction).status &&
         ['rejected', 'error'].includes((<ITransaction>transaction).status)
           ? html`
-              <sl-button variant="primary" @click=${submitRetry}
+              <sl-button
+                variant="primary"
+                style="margin-right:1rem"
+                @click=${submitRetry}
                 >Retry</sl-button
               >
             `
@@ -1001,7 +1011,7 @@ function BakryptLaunchpad(this: any) {
                     submitRefund();
                   }
                 }}
-                style="margin-left:1rem"
+                style=""
                 >Submit Refund</sl-button
               >
             `
