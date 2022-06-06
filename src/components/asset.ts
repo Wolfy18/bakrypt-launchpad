@@ -145,7 +145,7 @@ function AssetForm(
     const event = new CustomEvent('token', {
       bubbles: true,
       composed: true,
-      detail: { token: asset },
+      detail: { token: asset, index: String(index) },
     });
 
     this.dispatchEvent(event);
@@ -234,7 +234,7 @@ function AssetForm(
       nameInput.type = 'text';
       nameInput.placeholder = 'Name of the file';
       nameInput.addEventListener('input', (e: any) => {
-        console.log("corrio aqui ---------------------------------<<<<<<")
+        console.log('corrio aqui ---------------------------------<<<<<<');
         if (e.path && e.path.length > 0) {
           file.name = e.path[0].value;
           tokenCallback();
@@ -315,8 +315,9 @@ function AssetForm(
   };
 
   useEffect(() => {
+    console.log(index, "<===== INDEX")
     console.log(asset);
-    console.log(assetDetailed, ' <=========== ');
+    console.log(assetDetailed, ' <=========== assetDEtailed');
 
     if (asset) {
       if (asset.amount === 1) {
@@ -333,99 +334,18 @@ function AssetForm(
     }
 
     tokenCallback();
-  }, [asset, assetDetailed]);
+  }, [index, asset, assetDetailed]);
 
   return html`
+    <sl-input
+      style="margin: 0"
+      placeholder="Token Name"
+      size="large"
+      .value=${asset.asset_name.length < 1 ? asset.name : asset.asset_name}
+      disabled
+    ></sl-input>
     <div class="container asset">
       <section>
-        <sl-input
-          style="margin: 0"
-          placeholder="Token Name"
-          size="large"
-          .value=${asset.asset_name.length < 1 ? asset.name : asset.asset_name}
-          disabled
-        ></sl-input>
-        <div>
-          <sl-badge style="margin-top:1rem" variant=${tokenType.variant}
-            >${tokenType.type}</sl-badge
-          >
-          <sl-badge style="margin-top:1rem" variant="success"
-            >${asset.amount}</sl-badge
-          >
-        </div>
-
-        <div style="width: 100%; display: flex; justify-content:center;">
-          <sl-card
-            class="card-overview"
-            style="text-align:center; width:100%; max-width: 560px; margin-top: 1rem"
-          >
-            <div class="skeleton-overview">
-              ${asset.image.length > 0
-                ? html`
-                    <!-- <sl-responsive-media> -->
-                    <img
-                      style="display: block; margin-bottom:1rem; object-fit: contain; width: 100% "
-                      slot="image"
-                      src=${asset.image.length > 0
-                        ? `${asset.image}`.replace(
-                            'ipfs://',
-                            'https://ipfs.infura-ipfs.io/ipfs/'
-                          )
-                        : ''}
-                      alt="Token cover"
-                    />
-                    <!-- </sl-responsive-media> -->
-                  `
-                : html` <header>
-                    <sl-skeleton effect="pulse"></sl-skeleton>
-                  </header>`}
-              ${asset.name.length > 0
-                ? html`
-                    <h1><strong>${asset.name}</strong></h1>
-                    ${asset.description.length > 0
-                      ? html`
-                          <small>Description</small> <br />
-                          <p>${asset.description}</p>
-                        `
-                      : null}
-                  `
-                : html`
-                    <sl-skeleton effect="pulse"></sl-skeleton>
-                    <sl-skeleton effect="pulse"></sl-skeleton>
-                  `}
-              ${asset.files && asset.files.length > 0
-                ? asset.files.map(
-                    i =>
-                      html`<div class="attr-row">
-                        <img
-                          style="display: block; margin-bottom:1rem; object-fit: contain; width: 100% "
-                          slot="image"
-                          src=${i.src.replace(
-                            'ipfs://',
-                            'https://ipfs.infura-ipfs.io/ipfs/'
-                          )}
-                          alt=${i.name}
-                        />
-                        <h3>${i.name}</h3>
-                      </div>`
-                  )
-                : html`<sl-skeleton effect="pulse"></sl-skeleton>
-                    <sl-skeleton effect="pulse"></sl-skeleton>`}
-              ${asset.attrs && Object.keys(asset.attrs).length > 0
-                ? Object.keys(asset.attrs).map(
-                    (i: any) =>
-                      html`<div class="attr-row">
-                        <h4 style="margin-bottom: 0.5rem">${String(i)}</h4>
-                        <p style="margin-top: 0;">
-                          ${asset.attrs[i as keyof Object]}
-                        </p>
-                      </div>`
-                  )
-                : null}
-            </div>
-          </sl-card>
-        </div>
-
         <sl-divider style="--spacing: 2rem;"></sl-divider>
         <div style="margin-top:2rem"></div>
         <sl-input
@@ -536,7 +456,88 @@ function AssetForm(
           ></sl-details
         >
       </section>
-      <!-- <section></section> -->
+      <section>
+        <div>
+          <sl-badge style="margin-top:1rem" variant=${tokenType.variant}
+            >${tokenType.type}</sl-badge
+          >
+          <sl-badge style="margin-top:1rem" variant="success"
+            >${asset.amount}</sl-badge
+          >
+        </div>
+
+        <div style="width: 100%; display: flex; justify-content:center;">
+          <sl-card
+            class="card-overview"
+            style="text-align:center; width:100%; max-width: 560px; margin-top: 1rem"
+          >
+            <div class="skeleton-overview">
+              ${asset.image.length > 0
+                ? html`
+                    <!-- <sl-responsive-media> -->
+                    <img
+                      style="display: block; margin-bottom:1rem; object-fit: contain; width: 100% "
+                      slot="image"
+                      src=${asset.image.length > 0
+                        ? `${asset.image}`.replace(
+                            'ipfs://',
+                            'https://ipfs.infura-ipfs.io/ipfs/'
+                          )
+                        : ''}
+                      alt="Token cover"
+                    />
+                    <!-- </sl-responsive-media> -->
+                  `
+                : html` <header>
+                    <sl-skeleton effect="pulse"></sl-skeleton>
+                  </header>`}
+              ${asset.name.length > 0
+                ? html`
+                    <h1><strong>${asset.name}</strong></h1>
+                    ${asset.description.length > 0
+                      ? html`
+                          <small>Description</small> <br />
+                          <p>${asset.description}</p>
+                        `
+                      : null}
+                  `
+                : html`
+                    <sl-skeleton effect="pulse"></sl-skeleton>
+                    <sl-skeleton effect="pulse"></sl-skeleton>
+                  `}
+              ${asset.files && asset.files.length > 0
+                ? asset.files.map(
+                    i =>
+                      html`<div class="attr-row">
+                        <img
+                          style="display: block; margin-bottom:1rem; object-fit: contain; width: 100% "
+                          slot="image"
+                          src=${i.src.replace(
+                            'ipfs://',
+                            'https://ipfs.infura-ipfs.io/ipfs/'
+                          )}
+                          alt=${i.name}
+                        />
+                        <h3>${i.name}</h3>
+                      </div>`
+                  )
+                : html`<sl-skeleton effect="pulse"></sl-skeleton>
+                    <sl-skeleton effect="pulse"></sl-skeleton>`}
+              ${asset.attrs && Object.keys(asset.attrs).length > 0
+                ? Object.keys(asset.attrs).map(
+                    (i: any) =>
+                      html`<div class="attr-row">
+                        <h4 style="margin-bottom: 0.5rem">${String(i)}</h4>
+                        <p style="margin-top: 0;">
+                          ${asset.attrs[i as keyof Object]}
+                        </p>
+                      </div>`
+                  )
+                : null}
+            </div>
+          </sl-card>
+        </div>
+      </section>
 
       <!-- Attributes dialog -->
       <sl-dialog
