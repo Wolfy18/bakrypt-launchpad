@@ -106,7 +106,7 @@ function BakryptLaunchpad(this: any) {
       .sl-toast-stack {
         right: 0;
         left: auto;
-        top: 85vh;
+        top: 75vh;
       }
     `,
   ]);
@@ -114,6 +114,7 @@ function BakryptLaunchpad(this: any) {
   const [bakryptURI, setBakryptUri] = useState('');
   const [accessToken, setAccessToken] = useState('');
   const [refreshToken, setRefreshToken] = useState('');
+  const [csrfToken, setCSRFToken] = useState('');
   const [requestLoading, setRequestLoading] = useState(false);
 
   const [collectionRequest, setCollectionRequest] = useState([
@@ -209,11 +210,17 @@ function BakryptLaunchpad(this: any) {
         payload.append('refresh_token', _reToken);
         payload.append('grant_type', 'refresh_token');
 
+        const requestHeaders: any = {
+          'content-type': 'application/x-www-form-urlencoded',
+        };
+
+        if (csrfToken && csrfToken.length > 0) {
+          requestHeaders['X-CSRFToken'] = csrfToken;
+        }
+
         const tokenRequest = await fetch(`${bakryptURI}/auth/token/`, {
           method: 'post',
-          headers: {
-            'content-type': 'application/x-www-form-urlencoded',
-          },
+          headers: requestHeaders,
           body: payload,
         });
 
@@ -252,11 +259,17 @@ function BakryptLaunchpad(this: any) {
     console.log(input);
     setRequestLoading(true);
     try {
+      const requestHeaders: any = {
+        Authorization: `Bearer ${accessToken}`,
+      };
+
+      if (csrfToken && csrfToken.length > 0) {
+        requestHeaders['X-CSRFToken'] = csrfToken;
+      }
+
       const createAttachmentRequest = await fetch(`${bakryptURI}/v1/files/`, {
         method: 'POST',
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
+        headers: requestHeaders,
         body: payload,
       });
 
@@ -314,14 +327,20 @@ function BakryptLaunchpad(this: any) {
   // Retrieve transaction information
   const retrieveTransaction = async (uuid: string) => {
     try {
+      const requestHeaders: any = {
+        'content-type': 'application/json',
+        Authorization: `Bearer ${accessToken}`,
+      };
+
+      if (csrfToken && csrfToken.length > 0) {
+        requestHeaders['X-CSRFToken'] = csrfToken;
+      }
+
       const retrieveTransactionRequest = await fetch(
         `${bakryptURI}/v1/transactions/${uuid}/`,
         {
           method: 'GET',
-          headers: {
-            'content-type': 'application/json',
-            Authorization: `Bearer ${accessToken}`,
-          },
+          headers: requestHeaders,
         }
       );
 
@@ -377,13 +396,20 @@ function BakryptLaunchpad(this: any) {
     console.log(collection);
     let showInvoice = false;
     setRequestLoading(true);
+
     try {
+      const requestHeaders: any = {
+        'content-type': 'application/json',
+        Authorization: `Bearer ${accessToken}`,
+      };
+
+      if (csrfToken && csrfToken.length > 0) {
+        requestHeaders['X-CSRFToken'] = csrfToken;
+      }
+
       const submitCollectionRequest = await fetch(`${bakryptURI}/v1/assets/`, {
         method: 'POST',
-        headers: {
-          'content-type': 'application/json',
-          Authorization: `Bearer ${accessToken}`,
-        },
+        headers: requestHeaders,
         body: JSON.stringify(collection),
       });
 
@@ -443,16 +469,22 @@ function BakryptLaunchpad(this: any) {
   // Submit collection to the assets API
   const submitRetry = async () => {
     try {
+      const requestHeaders: any = {
+        'content-type': 'application/json',
+        Authorization: `Bearer ${accessToken}`,
+      };
+
+      if (csrfToken && csrfToken.length > 0) {
+        requestHeaders['X-CSRFToken'] = csrfToken;
+      }
+
       const submitRetryRequest = await fetch(
         `${bakryptURI}/v1/transactions/${
           (<ITransaction>transaction).uuid
         }/mint/`,
         {
           method: 'POST',
-          headers: {
-            'content-type': 'application/json',
-            Authorization: `Bearer ${accessToken}`,
-          },
+          headers: requestHeaders,
         }
       );
 
@@ -489,16 +521,22 @@ function BakryptLaunchpad(this: any) {
   const submitRefund = async () => {
     setRequestLoading(true);
     try {
+      const requestHeaders: any = {
+        'content-type': 'application/json',
+        Authorization: `Bearer ${accessToken}`,
+      };
+
+      if (csrfToken && csrfToken.length > 0) {
+        requestHeaders['X-CSRFToken'] = csrfToken;
+      }
+
       const submitRefundRequest = await fetch(
         `${bakryptURI}/v1/transactions/${
           (<ITransaction>transaction).uuid
         }/refund/`,
         {
           method: 'POST',
-          headers: {
-            'content-type': 'application/json',
-            Authorization: `Bearer ${accessToken}`,
-          },
+          headers: requestHeaders,
         }
       );
 
@@ -688,6 +726,11 @@ function BakryptLaunchpad(this: any) {
     const _refresh = this.getAttribute('refresh-token');
     if (_refresh) {
       setRefreshToken(_refresh);
+    }
+
+    const _csrfToken = this.getAttribute('csrf-token');
+    if (_csrfToken) {
+      setCSRFToken(_csrfToken);
     }
 
     if (refreshToken) {
