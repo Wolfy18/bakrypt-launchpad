@@ -150,7 +150,6 @@ function BakryptLaunchpad(this: any) {
       closable: true,
       duration,
       innerHTML: `
-        <sl-icon name="${icon}" slot="icon"></sl-icon>
         ${message}
       `,
     });
