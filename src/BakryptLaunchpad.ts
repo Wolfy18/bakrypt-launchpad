@@ -102,6 +102,12 @@ function BakryptLaunchpad(this: any) {
         inset: 0px;
         background-color: var(--sl-overlay-background-color);
       }
+
+      .sl-toast-stack {
+        right: 0;
+        left: auto;
+        top: 85vh;
+      }
     `,
   ]);
 
@@ -143,7 +149,7 @@ function BakryptLaunchpad(this: any) {
     message: string,
     variant = 'primary',
     icon = 'gear',
-    duration = 3000
+    duration = 5000
   ) => {
     const alert = Object.assign(document.createElement('sl-alert'), {
       variant,

@@ -383,7 +383,7 @@ function AssetForm(
     <div class="container asset">
       <section>
         <div>
-          <sl-badge style="margin-top:1rem" variant=${tokenType.variant}
+          <sl-badge style="margin-top:1rem" .pulse=${true} variant=${tokenType.variant}
             >${tokenType.type}</sl-badge
           >
           <sl-badge style="margin-top:1rem" variant="success"
