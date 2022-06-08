@@ -108,6 +108,11 @@ function BakryptLaunchpad(this: any) {
         left: auto;
         top: 75vh;
       }
+
+      sl-dialog::part(base) {
+        max-height: 80vh;
+        margin-top: 10vh;
+      }
     `,
   ]);
 
@@ -802,9 +807,14 @@ function BakryptLaunchpad(this: any) {
           min="0"
           max="100"
           type="number"
-          @input=${(e: { path?: Array<any> }) => {
+          @input=${(e: {
+            path?: Array<any>;
+            originalTarget?: HTMLInputElement;
+          }) => {
             if (e.path && e.path.length > 0) {
               setRoyalties({ ...royalties, rate: e.path[0].value });
+            } else if (e.originalTarget && e.originalTarget.value.length > 0) {
+              setRoyalties({ ...royalties, rate: e.originalTarget.value });
             }
           }}
         ></sl-input>
@@ -815,9 +825,14 @@ function BakryptLaunchpad(this: any) {
           maxlength="128"
           value=${royalties.address}
           type="text"
-          @input=${(e: { path?: Array<any> }) => {
+          @input=${(e: {
+            path?: Array<any>;
+            originalTarget?: HTMLInputElement;
+          }) => {
             if (e.path && e.path.length > 0) {
               setRoyalties({ ...royalties, address: e.path[0].value });
+            } else if (e.originalTarget && e.originalTarget.value.length > 0) {
+              setRoyalties({ ...royalties, address: e.originalTarget.value });
             }
           }}
         ></sl-input>

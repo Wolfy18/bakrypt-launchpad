@@ -193,6 +193,12 @@ function AssetForm(
           // Update asset object
           asset.attrs = { ...asset.attrs };
           tokenCallback();
+        } else if (e.originalTarget && e.originalTarget.value.length > 0) {
+          asset.attrs[name] = e.originalTarget.value;
+
+          // Update asset object
+          asset.attrs = { ...asset.attrs };
+          tokenCallback();
         }
       });
 
@@ -246,6 +252,9 @@ function AssetForm(
         if (e.path && e.path.length > 0) {
           file.name = e.path[0].value;
           tokenCallback();
+        } else if (e.originalTarget && e.originalTarget.value.length > 0) {
+          file.name = e.originalTarget.value;
+          tokenCallback();
         }
       });
 
@@ -258,6 +267,9 @@ function AssetForm(
         if (e.path && e.path.length > 0) {
           file.src = e.path[0].value;
           tokenCallback();
+        } else if (e.originalTarget && e.originalTarget.value.length > 0) {
+          file.src = e.originalTarget.value;
+          tokenCallback();
         }
       });
 
@@ -269,11 +281,14 @@ function AssetForm(
         if (e.path && e.path.length > 0) {
           file.mediaType = e.path[0].value;
           tokenCallback();
+        } else if (e.originalTarget && e.originalTarget.value.length > 0) {
+          file.mediaType = e.originalTarget.value;
+          tokenCallback();
         }
       });
 
       asset.files.push(file);
-      const fileIndx = asset.files.length - 1;
+
       // Create group
       const group: HTMLElement = document.createElement('div');
       group.classList.add('file-input-group');
@@ -322,16 +337,10 @@ function AssetForm(
         container.removeChild(group);
         container.removeChild(btnGroup);
         container.removeChild(divider);
-        console.log(delFile);
-        console.log(e);
+
         // Delete
-        console.log(file, ' <======= delete this guy');
-        console.log(asset.files, ' <<<==== from here...');
         asset.files = asset.files.filter(i => i !== file);
         tokenCallback();
-
-        console.log(asset.files);
-        console.log('we need to reindex the buttons. Do we?');
       });
     }
   };
@@ -351,10 +360,6 @@ function AssetForm(
   };
 
   useEffect(() => {
-    console.log(index, '<===== INDEX');
-    console.log(asset);
-    console.log(assetDetailed, ' <=========== assetDEtailed');
-
     if (asset) {
       if (asset.amount === 1) {
         setTokenType({ type: 'NFT', variant: 'primary' });
@@ -375,7 +380,7 @@ function AssetForm(
   return html`
     <sl-input
       style="margin: 0"
-      placeholder="Token Name"
+      placeholder="Asset Name"
       size="large"
       .value=${asset.asset_name.length < 1 ? asset.name : asset.asset_name}
       disabled
@@ -383,7 +388,10 @@ function AssetForm(
     <div class="container asset">
       <section>
         <div>
-          <sl-badge style="margin-top:1rem" .pulse=${true} variant=${tokenType.variant}
+          <sl-badge
+            style="margin-top:1rem; float: right"
+            .pulse=${true}
+            variant=${tokenType.variant}
             >${tokenType.type}</sl-badge
           >
           <sl-badge style="margin-top:1rem" variant="success"
@@ -467,28 +475,41 @@ function AssetForm(
         <sl-divider style="--spacing: 2rem;"></sl-divider>
         <div style="margin-top:2rem"></div>
         <sl-input
-          label="Name*"
+          label="Token Name*"
           placeholder="What would you like the token to be named?"
           required
           maxlength="64"
           value=${asset.name}
-          @input=${(e: { path?: Array<any> }) => {
+          @input=${(e: {
+            path?: Array<any>;
+            originalTarget?: HTMLInputElement;
+          }) => {
             if (e.path && e.path.length > 0) {
               setAsset({ ...asset, name: e.path[0].value });
+            } else if (e.originalTarget && e.originalTarget.value.length > 0) {
+              setAsset({ ...asset, name: e.originalTarget.value });
             }
           }}
         ></sl-input>
 
-        <sl-details summary="Do you want to specify a different token name?">
+        <sl-details summary="Do you want to specify a different asset name?">
           <sl-input
             label="Asset Name"
             placeholder="Set the asset name. Only numbers and letters. Up to 32 characters"
             maxlength="32"
             value=${asset.asset_name}
             type="text"
-            @input=${(e: { path?: Array<any> }) => {
+            @input=${(e: {
+              path?: Array<any>;
+              originalTarget?: HTMLInputElement;
+            }) => {
               if (e.path && e.path.length > 0) {
                 setAsset({ ...asset, asset_name: e.path[0].value });
+              } else if (
+                e.originalTarget &&
+                e.originalTarget.value.length > 0
+              ) {
+                setAsset({ ...asset, asset_name: e.originalTarget.value });
               }
             }}
           ></sl-input>
@@ -502,16 +523,26 @@ function AssetForm(
           value=${asset.amount}
           required
           maxlength="64"
-          @input=${(e: { path?: Array<any> }) => {
+          @input=${(e: {
+            path?: Array<any>;
+            originalTarget?: HTMLInputElement;
+          }) => {
             if (e.path && e.path.length > 0 && Number(e.path[0].value) > 1) {
               setAsset({ ...asset, amount: Number(e.path[0].value) });
+            } else if (e.originalTarget && e.originalTarget.value.length > 0) {
+              setAsset({ ...asset, amount: Number(e.originalTarget.value) });
             } else {
               setAsset({ ...asset, amount: 1 });
             }
           }}
-          @blur=${(e: { path?: Array<any> }) => {
+          @blur=${(e: {
+            path?: Array<any>;
+            originalTarget?: HTMLInputElement;
+          }) => {
             if (e.path && e.path.length > 0 && Number(e.path[0].value) > 1) {
               setAsset({ ...asset, amount: Number(e.path[0].value) });
+            } else if (e.originalTarget && e.originalTarget.value.length > 0) {
+              setAsset({ ...asset, amount: Number(e.originalTarget.value) });
             } else {
               setAsset({ ...asset, amount: 1 });
             }
@@ -526,9 +557,14 @@ function AssetForm(
           required
           maxlength="64"
           value=${asset.image}
-          @input=${(e: { path?: Array<any> }) => {
+          @input=${(e: {
+            path?: Array<any>;
+            originalTarget?: HTMLInputElement;
+          }) => {
             if (e.path && e.path.length > 0) {
               setAsset({ ...asset, image: e.path[0].value });
+            } else if (e.originalTarget && e.originalTarget.value.length > 0) {
+              setAsset({ ...asset, image: e.originalTarget.value });
             }
           }}
         ></sl-input>
@@ -565,9 +601,14 @@ function AssetForm(
           label="Description"
           placeholder="If you wish, write a description about the token"
           value=${asset.description}
-          @input=${(e: { path?: Array<any> }) => {
+          @input=${(e: {
+            path?: Array<any>;
+            originalTarget?: HTMLInputElement;
+          }) => {
             if (e.path && e.path.length > 0) {
               setAsset({ ...asset, description: e.path[0].value });
+            } else if (e.originalTarget && e.originalTarget.value.length > 0) {
+              setAsset({ ...asset, description: e.originalTarget.value });
             }
           }}
         >
