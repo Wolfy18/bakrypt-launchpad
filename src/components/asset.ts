@@ -116,6 +116,10 @@ function AssetForm(
         width: 90%;
         margin: 0 auto;
       }
+
+      :host input[type='file'] {
+        margin-bottom: 0;
+      }
     `,
   ]);
 
@@ -382,7 +386,7 @@ function AssetForm(
       style="margin: 0"
       placeholder="Asset Name"
       size="large"
-      .value=${asset.asset_name.length < 1 ? asset.name : asset.asset_name}
+      .value=${asset.asset_name.length < 1 ? asset.name.replace(" ", "") : asset.asset_name.replace(" ", "")}
       disabled
     ></sl-input>
     <div class="container asset">
@@ -483,8 +487,11 @@ function AssetForm(
           @input=${(e: {
             path?: Array<any>;
             originalTarget?: HTMLInputElement;
+            currentTarget?: HTMLInputElement;
           }) => {
-            if (e.path && e.path.length > 0) {
+            if (e.currentTarget && e.currentTarget.value.length > 0) {
+              setAsset({ ...asset, name: e.currentTarget.value });
+            } else if (e.path && e.path.length > 0) {
               setAsset({ ...asset, name: e.path[0].value });
             } else if (e.originalTarget && e.originalTarget.value.length > 0) {
               setAsset({ ...asset, name: e.originalTarget.value });
@@ -502,8 +509,11 @@ function AssetForm(
             @input=${(e: {
               path?: Array<any>;
               originalTarget?: HTMLInputElement;
+              currentTarget?: HTMLInputElement;
             }) => {
-              if (e.path && e.path.length > 0) {
+              if (e.currentTarget && e.currentTarget.value.length > 0) {
+                setAsset({ ...asset, asset_name: e.currentTarget.value });
+              } else if (e.path && e.path.length > 0) {
                 setAsset({ ...asset, asset_name: e.path[0].value });
               } else if (
                 e.originalTarget &&
@@ -526,11 +536,27 @@ function AssetForm(
           @input=${(e: {
             path?: Array<any>;
             originalTarget?: HTMLInputElement;
+            currentTarget?: HTMLInputElement;
           }) => {
-            if (e.path && e.path.length > 0 && Number(e.path[0].value) > 1) {
-              setAsset({ ...asset, amount: Number(e.path[0].value) });
+            if (e.currentTarget && e.currentTarget.value.length > 0) {
+              setAsset({
+                ...asset,
+                amount: Number(e.currentTarget.value),
+              });
+            } else if (
+              e.path &&
+              e.path.length > 0 &&
+              Number(e.path[0].value) > 1
+            ) {
+              setAsset({
+                ...asset,
+                amount: Number(e.path[0].value),
+              });
             } else if (e.originalTarget && e.originalTarget.value.length > 0) {
-              setAsset({ ...asset, amount: Number(e.originalTarget.value) });
+              setAsset({
+                ...asset,
+                amount: Number(e.originalTarget.value),
+              });
             } else {
               setAsset({ ...asset, amount: 1 });
             }
@@ -538,11 +564,27 @@ function AssetForm(
           @blur=${(e: {
             path?: Array<any>;
             originalTarget?: HTMLInputElement;
+            currentTarget?: HTMLInputElement;
           }) => {
-            if (e.path && e.path.length > 0 && Number(e.path[0].value) > 1) {
-              setAsset({ ...asset, amount: Number(e.path[0].value) });
+            if (e.currentTarget && e.currentTarget.value.length > 0) {
+              setAsset({
+                ...asset,
+                amount: Number(e.currentTarget.value),
+              });
+            } else if (
+              e.path &&
+              e.path.length > 0 &&
+              Number(e.path[0].value) > 1
+            ) {
+              setAsset({
+                ...asset,
+                amount: Number(e.path[0].value),
+              });
             } else if (e.originalTarget && e.originalTarget.value.length > 0) {
-              setAsset({ ...asset, amount: Number(e.originalTarget.value) });
+              setAsset({
+                ...asset,
+                amount: Number(e.originalTarget.value),
+              });
             } else {
               setAsset({ ...asset, amount: 1 });
             }
@@ -560,11 +602,20 @@ function AssetForm(
           @input=${(e: {
             path?: Array<any>;
             originalTarget?: HTMLInputElement;
+            currentTarget?: HTMLInputElement;
           }) => {
-            if (e.path && e.path.length > 0) {
+            if (e.currentTarget && e.currentTarget.value.length > 0) {
+              setAsset({
+                ...asset,
+                image: e.currentTarget.value,
+              });
+            } else if (e.path && e.path.length > 0) {
               setAsset({ ...asset, image: e.path[0].value });
             } else if (e.originalTarget && e.originalTarget.value.length > 0) {
-              setAsset({ ...asset, image: e.originalTarget.value });
+              setAsset({
+                ...asset,
+                image: e.originalTarget.value,
+              });
             }
           }}
         ></sl-input>
@@ -604,11 +655,20 @@ function AssetForm(
           @input=${(e: {
             path?: Array<any>;
             originalTarget?: HTMLInputElement;
+            currentTarget?: HTMLInputElement;
           }) => {
-            if (e.path && e.path.length > 0) {
+            if (e.currentTarget && e.currentTarget.value.length > 0) {
+              setAsset({
+                ...asset,
+                description: e.currentTarget.value,
+              });
+            } else if (e.path && e.path.length > 0) {
               setAsset({ ...asset, description: e.path[0].value });
             } else if (e.originalTarget && e.originalTarget.value.length > 0) {
-              setAsset({ ...asset, description: e.originalTarget.value });
+              setAsset({
+                ...asset,
+                description: e.originalTarget.value,
+              });
             }
           }}
         >

@@ -62,7 +62,7 @@ const testTransaction: ITransaction | {} = {
   royalties_minted: false,
   royalties_minted_on: null,
   royalties_rate: '3.00',
-  status: 'error',
+  status: 'waiting',
   status_description: 'Waiting for funds',
   type: 'ADA',
   updated_on: '2022-04-30 16:12:16.840865+00:00',
@@ -381,7 +381,7 @@ function BakryptLaunchpad(this: any) {
         // Repeat call every 15 seconds
         setTimeout(() => {
           retrieveTransaction(uuid);
-        }, 15000);
+        }, 10000);
       } else {
         const jsonResponse: ErrorResponse =
           await retrieveTransactionRequest.json();
@@ -810,11 +810,20 @@ function BakryptLaunchpad(this: any) {
           @input=${(e: {
             path?: Array<any>;
             originalTarget?: HTMLInputElement;
+            currentTarget?: HTMLInputElement;
           }) => {
-            if (e.path && e.path.length > 0) {
+            if (e.currentTarget && e.currentTarget.value.length > 0) {
+              setRoyalties({
+                ...royalties,
+                rate: e.currentTarget.value,
+              });
+            } else if (e.path && e.path.length > 0) {
               setRoyalties({ ...royalties, rate: e.path[0].value });
             } else if (e.originalTarget && e.originalTarget.value.length > 0) {
-              setRoyalties({ ...royalties, rate: e.originalTarget.value });
+              setRoyalties({
+                ...royalties,
+                rate: e.originalTarget.value,
+              });
             }
           }}
         ></sl-input>
@@ -828,11 +837,23 @@ function BakryptLaunchpad(this: any) {
           @input=${(e: {
             path?: Array<any>;
             originalTarget?: HTMLInputElement;
+            currentTarget?: HTMLInputElement;
           }) => {
-            if (e.path && e.path.length > 0) {
-              setRoyalties({ ...royalties, address: e.path[0].value });
+            if (e.currentTarget && e.currentTarget.value.length > 0) {
+              setRoyalties({
+                ...royalties,
+                address: e.currentTarget.value,
+              });
+            } else if (e.path && e.path.length > 0) {
+              setRoyalties({
+                ...royalties,
+                address: e.path[0].value,
+              });
             } else if (e.originalTarget && e.originalTarget.value.length > 0) {
-              setRoyalties({ ...royalties, address: e.originalTarget.value });
+              setRoyalties({
+                ...royalties,
+                address: e.originalTarget.value,
+              });
             }
           }}
         ></sl-input>
@@ -894,9 +915,7 @@ function BakryptLaunchpad(this: any) {
         style="
       "
       >
-        <small style="float:right"
-          >Save this value for verification purposes</small
-        >
+        <small style="float:right">** Unique Identifier</small>
         <sl-input
           maxlength="255"
           label="Transaction UUID"
@@ -908,24 +927,67 @@ function BakryptLaunchpad(this: any) {
         <div
           style="display:grid; grid-template-columns: repeat(auto-fit, minmax(305px, 1fr)); grid-gap: 0.5rem; align-items:center; margin-bottom: 2rem"
         >
-          <div style="text-align:center">
-            <sl-qr-code
-              value=${transaction
-                ? (<ITransaction>transaction).deposit_address
-                : 'Not found'}
-              label="Scan this code for the deposit_address!"
-            ></sl-qr-code>
-          </div>
+          <sl-details
+            summary="Click here to show a QR Code and scan the deposit address."
+          >
+            <div style="text-align:center">
+              <sl-qr-code
+                value=${transaction
+                  ? (<ITransaction>transaction).deposit_address
+                  : 'Not found'}
+                label="Scan this code for the deposit_address!"
+              ></sl-qr-code>
+            </div>
+          </sl-details>
           <sl-alert variant="warning" open>
             <strong>DO NOT TRANSFER FUNDS FROM AN EXCHANGE!</strong> <br />
             We will send all tokens and change to the payor's address; meaning
             that the payment must be done from a wallet that you can control and
-            its capable of manage native tokens.
+            its capable of manage native tokens on Cardano like
+            <a target="_blank" rel="nofollow" href="https://namiwallet.io/"
+              >Nami</a
+            >,
+            <a target="_blank" rel="nofollow" href="https://flint-wallet.com/"
+              >Flint</a
+            >,
+            <a
+              target="_blank"
+              rel="nofollow"
+              href="https://yoroi-wallet.com/#/"
+            >
+              Yoroi</a
+            >,
+            <a target="_blank" rel="nofollow" href="https://daedaluswallet.io/"
+              >Daedalus</a
+            >
+            or
+            <a
+              target="_blank"
+              rel="nofollow"
+              href="https://ccvault.io/app/mainnet/welcome"
+              >Eternl</a
+            >
           </sl-alert>
         </div>
         <div>
+          <p>
+            Please do not refresh the page, otherwise the session will be lost.
+            In any case, you can check your user profile to see a list of your
+            recent transactions.
+          </p>
+
+          <sl-textarea
+            style="margin-bottom:1rem"
+            label="Current Status. It Refreshes every 10 seconds."
+            value=${transaction
+              ? (<ITransaction>transaction).status_description
+              : ''}
+            readonly
+            filled
+          >
+          </sl-textarea>
           <sl-badge
-            style="margin-bottom: 2rem"
+            style="margin-bottom: 2rem; display: grid"
             .pulse=${true}
             variant=${transactionStatusVariant}
             >${transaction ? (<ITransaction>transaction).status : ''}</sl-badge
@@ -951,7 +1013,11 @@ function BakryptLaunchpad(this: any) {
                   filled
                   toggle-password
                   @click=${(e: any) => {
-                    if (e.path && e.path.length > 0) {
+                    if (e.currentTarget && e.currentTarget.value.length > 0) {
+                      const depAddr = e.currentTarget.value;
+                      navigator.clipboard.writeText(depAddr);
+                      notify('Copy to clipboard!', 'success');
+                    } else if (e.path && e.path.length > 0) {
                       const depAddr = e.path[0].value;
                       navigator.clipboard.writeText(depAddr);
                       notify('Copy to clipboard!', 'success');
@@ -972,11 +1038,12 @@ function BakryptLaunchpad(this: any) {
             : html` <sl-input
                 maxlength="255"
                 type="number"
-                label="Final Cost"
+                label="Cost"
                 value=${transaction ? (<ITransaction>transaction).cost : ''}
                 readonly
                 filled
               ></sl-input>`}
+          <sl-divider></sl-divider>
           <h4>Summary</h4>
           <sl-menu style="width: 100%">
             <sl-menu-item>
@@ -1035,20 +1102,9 @@ function BakryptLaunchpad(this: any) {
                 : ''}</sl-menu-item
             >
           </sl-menu>
-
-          <sl-divider></sl-divider>
         </div>
       </div>
-
-      <sl-textarea
-        label="Status Description"
-        value=${transaction
-          ? (<ITransaction>transaction).status_description
-          : ''}
-        readonly
-        filled
-      >
-      </sl-textarea>
+      <sl-divider></sl-divider>
       <div>
         ${transaction &&
         (<ITransaction>transaction).status &&
