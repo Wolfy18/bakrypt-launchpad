@@ -656,6 +656,7 @@ function BakryptLaunchpad(this: any) {
   const removeAsset = async (event: CustomEvent) => {
     const tab: any = event.target;
     const tabGroup = this.shadowRoot.querySelector('sl-tab-group');
+    console.log(tab)
     if (tab) {
       const panel = tabGroup.querySelector(`sl-tab-panel[name="${tab.panel}"]`);
 

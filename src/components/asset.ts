@@ -386,7 +386,9 @@ function AssetForm(
       style="margin: 0"
       placeholder="Asset Name"
       size="large"
-      .value=${asset.asset_name.length < 1 ? asset.name.replace(" ", "") : asset.asset_name.replace(" ", "")}
+      .value=${asset.asset_name.length < 1
+        ? asset.name.replace(' ', '')
+        : asset.asset_name.replace(' ', '')}
       disabled
     ></sl-input>
     <div class="container asset">
@@ -429,19 +431,17 @@ function AssetForm(
                     <sl-skeleton effect="pulse"></sl-skeleton>
                   </header>`}
               ${asset.name.length > 0
-                ? html`
-                    <h1><strong>${asset.name}</strong></h1>
-                    ${asset.description.length > 0
-                      ? html`
-                          <small>Description</small> <br />
-                          <p>${asset.description}</p>
-                        `
-                      : null}
-                  `
+                ? html` <h1><strong>${asset.name}</strong></h1> `
                 : html`
                     <sl-skeleton effect="pulse"></sl-skeleton>
                     <sl-skeleton effect="pulse"></sl-skeleton>
                   `}
+              ${asset.description.length > 0
+                ? html`
+                    <small>Description</small> <br />
+                    <p>${asset.description}</p>
+                  `
+                : null}
               ${asset.files && asset.files.length > 0
                 ? asset.files.map(
                     i =>
@@ -458,8 +458,7 @@ function AssetForm(
                         <h3>${i.name}</h3>
                       </div>`
                   )
-                : html`<sl-skeleton effect="pulse"></sl-skeleton>
-                    <sl-skeleton effect="pulse"></sl-skeleton>`}
+                : null}
               ${asset.attrs && Object.keys(asset.attrs).length > 0
                 ? Object.keys(asset.attrs).map(
                     (i: any) =>
