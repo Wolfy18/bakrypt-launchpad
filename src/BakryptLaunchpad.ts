@@ -630,19 +630,6 @@ function BakryptLaunchpad(this: any) {
           j.setAttribute('name', index);
           return i;
         });
-
-      // click the new tab
-      // const newTab = tabs.pop();
-      // if (newTab) {
-      //   console.log(tabGroup);
-      //   console.log(newTab);
-      //   console.log(newTab.panel);
-      //   console.log(tabGroup.tabs);
-      //   console.log(
-      //     tabGroup.tabs.find((i: any) => i.panel === String(newTab.panel))
-      //   );
-      //   tabGroup.setActiveTab(newTab, { scrollBehavior: 'smooth' });
-      // }
     }
   };
 
@@ -653,18 +640,21 @@ function BakryptLaunchpad(this: any) {
     }
   };
 
-  const removeAsset = async (event: CustomEvent) => {
+  const removeAsset = async (event: Event) => {
     const tab: any = event.target;
     const tabGroup = this.shadowRoot.querySelector('sl-tab-group');
-    console.log(tab)
+
     if (tab) {
       const panel = tabGroup.querySelector(`sl-tab-panel[name="${tab.panel}"]`);
 
       // Show the previous tab if the tab is currently active
-      // if (tab.active) {
-      //   console.log(tab.previousElementSibling);
-      //   tabGroup.show(tab.previousElementSibling.panel);
-      // }
+      console.log(tab.active, ' <tab is active!???======= ');
+      console.log(tabGroup);
+      if (tab.active) {
+        // console.log(tab.previousElementSibling);
+        // console.log(tab)
+        tabGroup.show(1);
+      }
 
       // Remove from colllection
       let col = collectionRequest as IAsset[];
@@ -895,7 +885,16 @@ function BakryptLaunchpad(this: any) {
             ><sl-button
               variant="primary"
               outline
-              @click=${addAsset}
+              @click=${async () => {
+                await addAsset();
+
+                const tabGroup = this.shadowRoot.querySelector('sl-tab-group');
+
+                if (tabGroup) {
+                  const newTab = tabGroup.tabs[tabGroup.tabs.length - 1];
+                  tabGroup.show(newTab.panel);
+                }
+              }}
               style="margin-left:2rem"
               >Add Asset</sl-button
             >`}
