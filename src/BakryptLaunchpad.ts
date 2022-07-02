@@ -648,12 +648,13 @@ function BakryptLaunchpad(this: any) {
       const panel = tabGroup.querySelector(`sl-tab-panel[name="${tab.panel}"]`);
 
       // Show the previous tab if the tab is currently active
-      console.log(tab.active, ' <tab is active!???======= ');
-      console.log(tabGroup);
+
       if (tab.active) {
-        // console.log(tab.previousElementSibling);
-        // console.log(tab)
-        tabGroup.show(1);
+        const currentIndx = tabGroup.tabs.indexOf(tab);
+
+        if (currentIndx >= 0) {
+          tabGroup.show(tabGroup.tabs[currentIndx - 1].panel);
+        }
       }
 
       // Remove from colllection
@@ -763,7 +764,7 @@ function BakryptLaunchpad(this: any) {
 
     <!-- Tab groupand panel section -->
     <section class="component-section">
-      <sl-tab-group>
+      <sl-tab-group id="mainTabsSection">
         <sl-tab slot="nav" panel="0">Primary Asset</sl-tab>
 
         <sl-tab-panel name="0">
@@ -893,6 +894,7 @@ function BakryptLaunchpad(this: any) {
                 if (tabGroup) {
                   const newTab = tabGroup.tabs[tabGroup.tabs.length - 1];
                   tabGroup.show(newTab.panel);
+                  tabGroup.scrollIntoView();
                 }
               }}
               style="margin-left:2rem"
