@@ -65,7 +65,7 @@ const testTransaction: ITransaction | {} = {
   royalties_estimated_cost: 0.227805,
   status: 'waiting',
   status_description: 'Waiting for funds',
-  blockchain: 'ADA',
+  type: 'ADA',
   updated_on: '2022-04-30 16:12:16.840865+00:00',
   uuid: '20baaf19-7cd6-4723-95c6-b1f554a27bbb',
 };
@@ -1020,7 +1020,7 @@ function BakryptLaunchpad(this: any) {
 
           <h4 style="color: var(--sl-color-warning-600);">
             Payment Type:
-            ${transaction ? (<ITransaction>transaction).blockchain : null}
+            ${transaction ? (<ITransaction>transaction).type : null}
           </h4>
           <sl-divider></sl-divider>
           <h4>Minting Summary</h4>

@@ -34,7 +34,7 @@ export interface IAsset {
 }
 export interface ITransaction {
   uuid: string;
-  blockchain: string;
+  type: string;
   status: string;
   status_description: string;
   fraud_status: string;
