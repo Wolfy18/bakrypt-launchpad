@@ -62,9 +62,10 @@ const testTransaction: ITransaction | {} = {
   royalties_minted: false,
   royalties_minted_on: null,
   royalties_rate: '3.00',
+  royalties_estimated_cost: 0.227805,
   status: 'waiting',
   status_description: 'Waiting for funds',
-  type: 'ADA',
+  blockchain: 'ADA',
   updated_on: '2022-04-30 16:12:16.840865+00:00',
   uuid: '20baaf19-7cd6-4723-95c6-b1f554a27bbb',
 };
@@ -155,7 +156,7 @@ function BakryptLaunchpad(this: any) {
     message: string,
     variant = 'primary',
     icon = 'gear',
-    duration = 5000
+    duration = 6000
   ) => {
     const alert = Object.assign(document.createElement('sl-alert'), {
       variant,
@@ -261,7 +262,7 @@ function BakryptLaunchpad(this: any) {
   const uploadFile = async (e: any) => {
     const { payload } = e.detail;
     const { input } = e.detail;
-    console.log(input);
+
     setRequestLoading(true);
     try {
       const requestHeaders: any = {
@@ -286,32 +287,6 @@ function BakryptLaunchpad(this: any) {
           const inputEvent = new Event('input');
           input.dispatchEvent(inputEvent);
         }
-        // if (Number(index) > -1) {
-        //   const col = collectionRequest as IAsset[];
-        //   const asset: IAsset = col[Number(index)];
-        //   asset.image = jsonResponse.ipfs;
-        //   asset.mediaType = jsonResponse.mimetype;
-        //   col[Number(index)] = asset;
-        //   const form = this.shadowRoot.querySelectorAll('bk-asset-form');
-        //   if (form) {
-        //     [...form]
-        //       .filter((i: any) => i.index === Number(index))
-        //       .map((i: HTMLElement) => {
-        //         console.log('its going to pass it down...');
-        //         console.log(i);
-        //         console.log(asset);
-        //         const event = new Event('token');
-        //         i.dispatchEvent(event);
-        //         // Object.defineProperty(i, 'assetDetailed', {
-        //         //   value: asset,
-        //         //   writable: true,
-        //         //   configurable: true,
-        //         // });
-
-        //         return i;
-        //       });
-        //   }
-        // }
 
         notify('Successfully uploaded file to IPFS', 'success');
       } else {
@@ -898,7 +873,7 @@ function BakryptLaunchpad(this: any) {
               >Add Asset</sl-button
             >`}
       ${transaction
-        ? html` <sl-button variant="success" outline @click=${viewTransaction}
+        ? html` <sl-button variant="success" @click=${viewTransaction}
             >Show Invoice</sl-button
           >`
         : null}
@@ -908,13 +883,13 @@ function BakryptLaunchpad(this: any) {
     <sl-dialog
       label="Invoice Details"
       class="dialog-width"
-      style="--width: 80vw;"
+      style="--width: 95vw;"
     >
       <div
         style="
       "
       >
-        <small style="float:right">** Unique Identifier</small>
+        <small style="float:right"><i>Unique Identifier</i></small>
         <sl-input
           maxlength="255"
           label="Transaction UUID"
@@ -970,14 +945,14 @@ function BakryptLaunchpad(this: any) {
         </div>
         <div>
           <p>
-            Please do not refresh the page, otherwise the session will be lost.
-            In any case, you can check your user profile to see a list of your
-            recent transactions.
+            Please do not refresh the page, otherwise this session will be
+            restarted. In any case, you can check your user profile to see a
+            list of your recent transactions.
           </p>
 
           <sl-textarea
             style="margin-bottom:1rem"
-            label="Current Status. It Refreshes every 10 seconds."
+            label="Status. It refreshes every 10 seconds."
             value=${transaction
               ? (<ITransaction>transaction).status_description
               : ''}
@@ -1029,7 +1004,7 @@ function BakryptLaunchpad(this: any) {
             ? html` <sl-input
                 maxlength="255"
                 type="number"
-                label="Estimated cost"
+                label="Minimum Processing Cost"
                 value=${transaction ? (<ITransaction>transaction).cost : ''}
                 readonly
                 filled
@@ -1042,65 +1017,106 @@ function BakryptLaunchpad(this: any) {
                 readonly
                 filled
               ></sl-input>`}
+
+          <h4 style="color: var(--sl-color-warning-600);">
+            Payment Type:
+            ${transaction ? (<ITransaction>transaction).blockchain : null}
+          </h4>
           <sl-divider></sl-divider>
-          <h4>Summary</h4>
-          <sl-menu style="width: 100%">
-            <sl-menu-item>
-              <strong>Minting:</strong>
-              <br />
-              <small
-                >** These tokens are returned to the payor's wallet
-                automatically. **</small
-              >
-              <sl-menu style="width: 100%">
-                <sl-menu-item
-                  >Number of assets: ${collectionRequest.length}</sl-menu-item
-                >
-                <sl-menu-item
-                  >Bond per asset:
-                  ${transaction && (<ITransaction>transaction).cost
-                    ? collectionRequest.length * Number(1.95)
-                    : null}</sl-menu-item
-                >
-                <sl-menu-item
-                  >Change:
-                  ${transaction && (<ITransaction>transaction).cost
-                    ? (
-                        Number((<ITransaction>transaction).cost) -
-                        Number((<ITransaction>transaction).blockchain_fee) -
-                        Number((<ITransaction>transaction).convenience_fee) -
-                        Number(collectionRequest.length * Number(1.95))
-                      ).toFixed(6)
-                    : null}</sl-menu-item
-                >
-                <sl-divider></sl-divider>
-                <sl-menu-item
-                  >Total Change:
-                  ${transaction && (<ITransaction>transaction).cost
-                    ? `${Number(
-                        collectionRequest.length * Number(1.95) +
-                          Number((<ITransaction>transaction).cost) -
-                          Number((<ITransaction>transaction).blockchain_fee) -
-                          Number((<ITransaction>transaction).convenience_fee) -
-                          Number(collectionRequest.length * Number(1.95))
-                      ).toFixed(6)}`
-                    : null}</sl-menu-item
-                >
-              </sl-menu></sl-menu-item
+          <h4>Minting Summary</h4>
+          <p>
+            <small
+              ><i>**These tokens are returned to the payor's wallet.</i></small
             >
-            <sl-menu-item
-              ><strong>Convenience Fee</strong>:
-              ${transaction
-                ? (<ITransaction>transaction).convenience_fee
-                : ''}</sl-menu-item
-            >
-            <sl-menu-item
-              ><strong>Blockchain Fee</strong>:
-              ${transaction
-                ? (<ITransaction>transaction).blockchain_fee
-                : ''}</sl-menu-item
-            >
-          </sl-menu>
+          </p>
+
+          <table style="text-align:left">
+            <thead>
+              <tr>
+                <th>Item</th>
+                <th>Qty</th>
+                <th>Price</th>
+                <th>Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${transaction && (<ITransaction>transaction).has_royalties
+                ? html`<tr>
+                      <td>
+                        <p>Royalties Bond.**<br /></p>
+                      </td>
+                      <td>1</td>
+                      <td>
+                        ${transaction
+                          ? (<ITransaction>transaction).royalties_estimated_cost
+                          : ''}
+                      </td>
+                      <td>
+                        ${transaction
+                          ? (<ITransaction>transaction).royalties_estimated_cost
+                          : ''}
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>
+                        <p><strong>Royalties Blockchain Fee</strong></p>
+                      </td>
+                      <td>1</td>
+                      <td>
+                        ${transaction
+                          ? (<ITransaction>transaction).blockchain_fee
+                          : ''}
+                      </td>
+                      <td>
+                        ${transaction
+                          ? (<ITransaction>transaction).blockchain_fee
+                          : ''}
+                      </td>
+                    </tr>`
+                : null}
+
+              <tr>
+                <td>
+                  <p>Bond per Asset.**<br /></p>
+                </td>
+                <td>${collectionRequest.length}</td>
+                <td>1.95</td>
+                <td>${(collectionRequest.length * 1.95).toFixed(2)}</td>
+              </tr>
+
+              <tr>
+                <td>
+                  <p><strong>Convenience Fee</strong></p>
+                </td>
+                <td>${collectionRequest.length}</td>
+                <td>2</td>
+                <td>
+                  ${transaction
+                    ? (<ITransaction>transaction).convenience_fee
+                    : ''}
+                </td>
+              </tr>
+
+              <tr>
+                <td>
+                  <p><strong>Blockchain Fee</strong></p>
+                </td>
+                <td>2</td>
+                <td>
+                  ${transaction
+                    ? (<ITransaction>transaction).blockchain_fee
+                    : ''}
+                </td>
+                <td>
+                  ${transaction
+                    ? html`${Number(
+                        (<ITransaction>transaction).blockchain_fee
+                      ) * 2}`
+                    : ''}
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </div>
       <sl-divider></sl-divider>
