@@ -129,7 +129,9 @@ function AssetForm(
   });
   const [asset, setAsset] = useState(assetDetailed || { ..._asset });
 
-  const clearFile = () => {};
+  const clearFile = (fileInput: HTMLInputElement) => {
+    fileInput.value = '';
+  };
 
   const requestUpload = (inputfile: any, input: HTMLInputElement | SlInput) => {
     const payload = new FormData();
@@ -153,7 +155,6 @@ function AssetForm(
 
   // Return callback with the token information
   const tokenCallback = () => {
-    console.log(asset, '<========= from callback');
     setAsset(asset);
     const event = new CustomEvent('token', {
       bubbles: true,
@@ -328,7 +329,7 @@ function AssetForm(
       const clearFileBtn = document.createElement('sl-button');
       clearFileBtn.variant = 'warning';
       clearFileBtn.setAttribute('outline', '');
-      clearFileBtn.addEventListener('click', clearFile);
+      clearFileBtn.addEventListener('click', () => clearFile(fileInputForm));
       clearFileBtn.innerHTML = 'Clear File';
       // btnGroup.appendChild(fileInputForm);
       btnGroup.appendChild(uploadFileBtn);
@@ -655,7 +656,11 @@ function AssetForm(
               }}
               >Upload file to IPFS</sl-button
             >
-            <sl-button variant="warning" outline @click=${clearFile}
+            <sl-button
+              variant="warning"
+              outline
+              @click=${() =>
+                clearFile(this.shadowRoot.querySelector('#ipfs-fileinput'))}
               >Clear file</sl-button
             >
           </sl-button-group>
