@@ -736,14 +736,11 @@ function BakryptLaunchpad(this: any) {
       }, 300000); // Every 30 minutes
     }
     const tabGroup = this.shadowRoot.querySelector('sl-tab-group');
-    if (accessToken) {
-      // tab group listener
-      tabGroup.addEventListener('sl-close', removeAsset);
 
-      // Add event listeners
-      window.addEventListener('token', pushToken);
-      window.addEventListener('upload-file', uploadFile);
-    }
+    // Add event listeners
+    tabGroup.addEventListener('sl-close', removeAsset);
+    window.addEventListener('token', pushToken);
+    window.addEventListener('upload-file', uploadFile);
 
     return () => {
       tabGroup.removeEventListener('sl-close', removeAsset);

@@ -191,7 +191,12 @@ function AssetForm(
       valueInput.placeholder = 'Set the attribute value';
 
       valueInput.addEventListener('input', (e: any) => {
-        if (e.path && e.path.length > 0) {
+        if (e.currentTarget && e.currentTarget.value.length > 0) {
+          asset.attrs[name] = e.currentTarget.value;
+          // Update asset object
+          asset.attrs = { ...asset.attrs };
+          tokenCallback();
+        } else if (e.path && e.path.length > 0) {
           asset.attrs[name] = e.path[0].value;
 
           // Update asset object
@@ -253,7 +258,10 @@ function AssetForm(
       nameInput.type = 'text';
       nameInput.placeholder = 'Name of the file';
       nameInput.addEventListener('input', (e: any) => {
-        if (e.path && e.path.length > 0) {
+        if (e.currentTarget && e.currentTarget.value.length > 0) {
+          file.name = e.currentTarget.value;
+          tokenCallback();
+        } else if (e.path && e.path.length > 0) {
           file.name = e.path[0].value;
           tokenCallback();
         } else if (e.originalTarget && e.originalTarget.value.length > 0) {
@@ -268,7 +276,10 @@ function AssetForm(
       srcInput.placeholder = 'Set the image source like IPFS';
 
       srcInput.addEventListener('input', (e: any) => {
-        if (e.path && e.path.length > 0) {
+        if (e.currentTarget && e.currentTarget.value.length > 0) {
+          file.src = e.currentTarget.value;
+          tokenCallback();
+        } else if (e.path && e.path.length > 0) {
           file.src = e.path[0].value;
           tokenCallback();
         } else if (e.originalTarget && e.originalTarget.value.length > 0) {
@@ -282,7 +293,10 @@ function AssetForm(
       mediaTypeInput.type = 'text';
       mediaTypeInput.placeholder = 'Media type e.g. image/jpg';
       mediaTypeInput.addEventListener('input', (e: any) => {
-        if (e.path && e.path.length > 0) {
+        if (e.currentTarget && e.currentTarget.value.length > 0) {
+          file.mediaType = e.currentTarget.value;
+          tokenCallback();
+        } else if (e.path && e.path.length > 0) {
           file.mediaType = e.path[0].value;
           tokenCallback();
         } else if (e.originalTarget && e.originalTarget.value.length > 0) {
@@ -316,7 +330,7 @@ function AssetForm(
       clearFileBtn.setAttribute('outline', '');
       clearFileBtn.addEventListener('click', clearFile);
       clearFileBtn.innerHTML = 'Clear File';
-      btnGroup.appendChild(fileInputForm);
+      // btnGroup.appendChild(fileInputForm);
       btnGroup.appendChild(uploadFileBtn);
       btnGroup.appendChild(clearFileBtn);
 
@@ -335,7 +349,7 @@ function AssetForm(
       divider.setAttribute('style', '--spacing:2rem');
       container.appendChild(btnGroup);
       container.appendChild(divider);
-
+      container.insertBefore(fileInputForm, btnGroup);
       // Remove group and file listener
       delFile.addEventListener('click', (e: Event) => {
         container.removeChild(group);
