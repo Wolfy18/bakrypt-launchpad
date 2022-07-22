@@ -16,7 +16,7 @@ const _asset: IAsset = {
   name: '',
   asset_name: '',
   image: '',
-  mediaType: '',
+  media_type: '',
   description: '',
   files: [],
   attrs: {},

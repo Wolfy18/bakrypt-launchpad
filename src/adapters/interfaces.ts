@@ -23,7 +23,7 @@ export interface IAsset {
   name: string;
   asset_name: string;
   image: string;
-  mediaType: string;
+  media_type: string;
   description: string;
   files: Array<IAssetFile>;
   attrs: object;
@@ -59,6 +59,7 @@ export interface ITransaction {
   royalties_burned: boolean;
   royalties_burned_on: string;
   royalties_estimated_cost: string;
+  expires_on: string;
   name: string;
   image: string;
   description: string;

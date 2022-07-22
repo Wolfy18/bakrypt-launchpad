@@ -67,6 +67,7 @@ const testTransaction: ITransaction | {} = {
   status_description: 'Waiting for funds',
   type: 'ADA',
   updated_on: '2022-04-30 16:12:16.840865+00:00',
+  expires_on: '2022-04-31 16:12:16.840865+00:00',
   uuid: '20baaf19-7cd6-4723-95c6-b1f554a27bbb',
 };
 
@@ -129,7 +130,7 @@ function BakryptLaunchpad(this: any) {
       name: '',
       asset_name: '',
       image: '',
-      mediaType: '',
+      media_type: '',
       description: '',
       files: [],
       attrs: {},
@@ -140,7 +141,7 @@ function BakryptLaunchpad(this: any) {
     rate: '',
     address: '',
   });
-  const [transaction, setTransaction] = useState();
+  const [transaction, setTransaction] = useState(testTransaction);
   const [transactionStatusVariant, setTransactionStatusVariant] = useState(
     transaction ? 'primary' : 'neutral'
   );
@@ -573,7 +574,7 @@ function BakryptLaunchpad(this: any) {
         name: '',
         asset_name: '',
         image: '',
-        mediaType: '',
+        media_type: '',
         description: '',
         files: [],
         attrs: {},
@@ -898,6 +899,7 @@ function BakryptLaunchpad(this: any) {
           readonly
           filled
         ></sl-input>
+
         <div
           style="display:grid; grid-template-columns: repeat(auto-fit, minmax(305px, 1fr)); grid-gap: 0.5rem; align-items:center; margin-bottom: 2rem"
         >
@@ -944,15 +946,9 @@ function BakryptLaunchpad(this: any) {
           </sl-alert>
         </div>
         <div>
-          <p>
-            Please do not refresh the page, otherwise this session will be
-            restarted. In any case, you can check your user profile to see a
-            list of your recent transactions.
-          </p>
-
           <sl-textarea
             style="margin-bottom:1rem"
-            label="Status. It refreshes every 10 seconds."
+            label="The status refreshes every 10 seconds."
             value=${transaction
               ? (<ITransaction>transaction).status_description
               : ''}
@@ -966,6 +962,12 @@ function BakryptLaunchpad(this: any) {
             variant=${transactionStatusVariant}
             >${transaction ? (<ITransaction>transaction).status : ''}</sl-badge
           >
+          <p>
+            Please do not refresh the page, otherwise this session will be
+            restarted.
+          </p>
+          <sl-divider></sl-divider>
+          <h4>Payment Information</h4>
           <sl-input
             maxlength="255"
             label="Policy ID"
@@ -1000,6 +1002,26 @@ function BakryptLaunchpad(this: any) {
                   }}
                 ></sl-input>`
             : null}
+          <sl-input
+            maxlength="255"
+            label="Created on"
+            value=${transaction
+              ? new Date((<ITransaction>transaction).created_on).toUTCString()
+              : ''}
+            type="text"
+            readonly
+            filled
+          ></sl-input>
+          <sl-input
+            maxlength="255"
+            label="Expires on"
+            value=${transaction
+              ? new Date((<ITransaction>transaction).expires_on).toUTCString()
+              : ''}
+            type="text"
+            readonly
+            filled
+          ></sl-input>
           ${transaction && (<ITransaction>transaction).status !== 'confirmed'
             ? html` <sl-input
                 maxlength="255"
@@ -1017,20 +1039,29 @@ function BakryptLaunchpad(this: any) {
                 readonly
                 filled
               ></sl-input>`}
-
           <h4 style="color: var(--sl-color-warning-600);">
             Payment Type:
             ${transaction ? (<ITransaction>transaction).type : null}
           </h4>
+          <sl-alert variant="warning" open>
+            Remember, to complete your transaction, your payment must be
+            received before the expiration time shown above. Late payments can
+            be refunded. Minted assets are non-refundable and non-transferable.
+            All times shown are UTC (Coordinated Universal Time).
+          </sl-alert>
           <sl-divider></sl-divider>
           <h4>Minting Summary</h4>
           <p>
             <small
-              ><i>**These tokens are returned to the payor's wallet.</i></small
-            >
+              ><i
+                >You must send the minimum amount of ADA shown above. Any change
+                will be returned automatically to the payor's wallet.</i
+              ></small
+            ><br /><br />
+            <small><i>**Tokens are returned to the payor's wallet.</i></small>
           </p>
 
-          <table style="text-align:left">
+          <table style="text-align:left; width: 100%">
             <thead>
               <tr>
                 <th>Item</th>
