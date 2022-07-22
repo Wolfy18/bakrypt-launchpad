@@ -513,7 +513,7 @@ function AssetForm(
           }}
         ></sl-input>
 
-        <sl-details summary="Do you want to specify a different asset name?">
+        <sl-details summary="Would you like a different asset name?">
           <sl-input
             label="Asset Name"
             placeholder="Set the asset name. Only numbers and letters. Up to 32 characters"
@@ -635,10 +635,10 @@ function AssetForm(
         ></sl-input>
 
         <sl-details
-          summary="Do you want to upload a file to IPFS and use the attachment instead?"
+          summary="Upload file to IPFS and use that one instead?"
         >
           Select a file to upload. When you're ready, press the upload button to
-          start pushing into IPFS.
+          start uploading into IPFS.
           <br /><br />
           <input type="file" id="ipfs-fileinput" />
 

@@ -795,7 +795,7 @@ function BakryptLaunchpad(this: any) {
 
         <sl-input
           label="Royalties wallet address"
-          placeholder="Set the payment address for the royalties"
+          placeholder="Set the wallet address that will be receiving royalties"
           maxlength="128"
           value=${royalties.address}
           type="text"
