@@ -141,7 +141,7 @@ function BakryptLaunchpad(this: any) {
     rate: '',
     address: '',
   });
-  const [transaction, setTransaction] = useState(testTransaction);
+  const [transaction, setTransaction] = useState();
   const [transactionStatusVariant, setTransactionStatusVariant] = useState(
     transaction ? 'primary' : 'neutral'
   );
