@@ -466,7 +466,7 @@ function AssetForm(
                           slot="image"
                           src=${i.src.replace(
                             'ipfs://',
-                            'https://ipfs.infura-ipfs.io/ipfs/'
+                            'https://ipfs.io/ipfs/'
                           )}
                           alt=${i.name}
                         />
