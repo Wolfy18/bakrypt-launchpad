@@ -435,7 +435,7 @@ function AssetForm(
                       src=${asset.image.length > 0
                         ? `${asset.image}`.replace(
                             'ipfs://',
-                            'https://ipfs.infura-ipfs.io/ipfs/'
+                            'https://ipfs.io/ipfs/'
                           )
                         : ''}
                       alt="Token cover"
