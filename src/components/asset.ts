@@ -435,7 +435,7 @@ function AssetForm(
                       src=${asset.image.length > 0
                         ? `${asset.image}`.replace(
                             'ipfs://',
-                            'https://ipfs.io/ipfs/'
+                            'https://cloudflare-ipfs.com/ipfs/'
                           )
                         : ''}
                       alt="Token cover"
@@ -466,7 +466,7 @@ function AssetForm(
                           slot="image"
                           src=${i.src.replace(
                             'ipfs://',
-                            'https://ipfs.io/ipfs/'
+                            'https://cloudflare-ipfs.com/ipfs/'
                           )}
                           alt=${i.name}
                         />
