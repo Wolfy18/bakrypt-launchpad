@@ -14,8 +14,8 @@ npm i bakrypt-launchpad
 <script type="module">
   import 'bakrypt-launchpad/bakrypt-launchpad.js';
 </script>
-
-<bakrypt-launchpad access-token="ACCESSTOKEN" refresh-token="REFRESHTOKEN"></bakrypt-launchpad>
+<!-- resfresh token, testnet and csrf token are optional attributes -->
+<bakrypt-launchpad access-token="ACCESSTOKEN" refresh-token="REFRESHTOKEN" testnet="true" csrf-token=""></bakrypt-launchpad>
 ```
 
 ## Linting and formatting
