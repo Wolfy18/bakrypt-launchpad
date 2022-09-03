@@ -761,9 +761,7 @@ function BakryptLaunchpad(this: any) {
           : 'Not Active'}</sl-badge
       >
       <sl-divider style="--spacing: 2rem;"></sl-divider>
-      <sl-details
-        summary="Would you like to set royalties for this collection?"
-      >
+      <sl-details summary="Set Royalties">
         <sl-input
           label="Royalties Rate in %"
           placeholder="Set the percentage rate from 0 - 100%"
@@ -1022,11 +1020,25 @@ function BakryptLaunchpad(this: any) {
             readonly
             filled
           ></sl-input>
+          <sl-input
+            maxlength="255"
+            label="Conv. Fees"
+            value=${transaction
+              ? (<ITransaction>transaction).convenience_fee
+              : ''}
+            type="text"
+            readonly
+            filled
+          ></sl-input>
+          <h4 style="color: var(--sl-color-warning-600);">
+            Payment Type:
+            ${transaction ? (<ITransaction>transaction).type : null}
+          </h4>
           ${transaction && (<ITransaction>transaction).status !== 'confirmed'
             ? html` <sl-input
                 maxlength="255"
                 type="number"
-                label="Minimum Processing Cost"
+                label="Processing Cost"
                 value=${transaction ? (<ITransaction>transaction).cost : ''}
                 readonly
                 filled
@@ -1039,10 +1051,6 @@ function BakryptLaunchpad(this: any) {
                 readonly
                 filled
               ></sl-input>`}
-          <h4 style="color: var(--sl-color-warning-600);">
-            Payment Type:
-            ${transaction ? (<ITransaction>transaction).type : null}
-          </h4>
           <sl-alert variant="warning" open>
             Remember, to complete your transaction, your payment must be
             received before the expiration time shown above. Late payments can

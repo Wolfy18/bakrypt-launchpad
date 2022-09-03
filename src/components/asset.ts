@@ -492,9 +492,10 @@ function AssetForm(
       <section>
         <sl-divider style="--spacing: 2rem;"></sl-divider>
         <div style="margin-top:2rem"></div>
+        <label>Token Name <span style="color:red">*</span></label>
         <sl-input
-          label="Token Name*"
-          placeholder="What would you like the token to be named?"
+          style="margin-top: 2px"
+          placeholder="Set the name of the token"
           required
           maxlength="64"
           value=${asset.name}
@@ -513,9 +514,8 @@ function AssetForm(
           }}
         ></sl-input>
 
-        <sl-details summary="Would you like a different asset name?">
+        <sl-details summary="Asset Name">
           <sl-input
-            label="Asset Name"
             placeholder="Set the asset name. Only numbers and letters. Up to 32 characters"
             maxlength="32"
             value=${asset.asset_name}
@@ -539,8 +539,9 @@ function AssetForm(
           ></sl-input>
         </sl-details>
 
+        <label>Units <span style="color:red">*</span></label>
         <sl-input
-          label="Token unit amount*"
+          style="margin-top: 2px"
           type="number"
           placeholder="Number of copies for this token. 1 for NFTs and more than 1 for fungible tokens (FTs)"
           min="1"
@@ -605,11 +606,12 @@ function AssetForm(
           }}
         ></sl-input>
 
+        <label>Cover Image <span style="color:red">*</span></label>
         <sl-input
+          style="margin-top: 2px"
           id="cover-image-input"
-          label="Cover Image*"
           type="url"
-          placeholder="Which image would you like to use? IPFS links are recommended"
+          placeholder="IPFS is a great fit"
           required
           maxlength="64"
           value=${asset.image}
@@ -634,9 +636,7 @@ function AssetForm(
           }}
         ></sl-input>
 
-        <sl-details
-          summary="Upload file to IPFS and use that one instead?"
-        >
+        <sl-details summary="Upload file to IPFS">
           Select a file to upload. When you're ready, press the upload button to
           start uploading into IPFS.
           <br /><br />
@@ -668,7 +668,7 @@ function AssetForm(
 
         <sl-textarea
           label="Description"
-          placeholder="If you wish, write a description about the token"
+          placeholder="Description about the token"
           value=${asset.description}
           @input=${(e: {
             path?: Array<any>;
