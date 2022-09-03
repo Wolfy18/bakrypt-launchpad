@@ -71,7 +71,20 @@ const testTransaction: ITransaction | {} = {
   uuid: '20baaf19-7cd6-4723-95c6-b1f554a27bbb',
 };
 
-function BakryptLaunchpad(this: any) {
+function BakryptLaunchpad(
+  this: any,
+  {
+    accessToken,
+    refreshToken,
+    csrfToken,
+    testnet,
+  }: {
+    accessToken: string;
+    refreshToken: string;
+    csrfToken: string;
+    testnet: string;
+  }
+) {
   useStyles(this, [
     shoeStyles,
     style,
@@ -118,10 +131,11 @@ function BakryptLaunchpad(this: any) {
     `,
   ]);
 
-  const [bakryptURI, setBakryptUri] = useState('');
-  const [accessToken, setAccessToken] = useState('');
-  const [refreshToken, setRefreshToken] = useState('');
-  const [csrfToken, setCSRFToken] = useState('');
+  const bakryptURI =
+    testnet && testnet.length
+      ? 'https://testnet.bakrypt.io'
+      : 'https://bakrypt.io';
+
   const [requestLoading, setRequestLoading] = useState(false);
 
   const [collectionRequest, setCollectionRequest] = useState([
@@ -206,57 +220,6 @@ function BakryptLaunchpad(this: any) {
     };
 
     return alert.toast();
-  };
-
-  // Refresh Access token every 30 minutes
-  const refreshAccessToken = async (token: string) => {
-    let _reToken = token;
-    try {
-      if (_reToken) {
-        const payload = new URLSearchParams();
-        payload.append('refresh_token', _reToken);
-        payload.append('grant_type', 'refresh_token');
-
-        const requestHeaders: any = {
-          'content-type': 'application/x-www-form-urlencoded',
-        };
-
-        if (csrfToken && csrfToken.length > 0) {
-          requestHeaders['X-CSRFToken'] = csrfToken;
-        }
-
-        const tokenRequest = await fetch(`${bakryptURI}/auth/token/`, {
-          method: 'post',
-          headers: requestHeaders,
-          body: payload,
-        });
-
-        if (tokenRequest.ok) {
-          const tokenResponse: AccessToken = await tokenRequest.json();
-
-          setAccessToken(tokenResponse.access_token);
-          _reToken = tokenResponse.refresh_token;
-          notify('Session extended', 'primary');
-        } else {
-          const tokenResponse: ErrorResponse = await tokenRequest.json();
-
-          if (tokenResponse.error_description) {
-            const err = `Unable to refresh access token: ${tokenResponse.error_description}`;
-            notify(err, 'danger');
-          } else if (tokenResponse.error) {
-            const err = `Unable to refresh access token: ${tokenResponse.error}`;
-            notify(err, 'danger');
-          }
-        }
-      }
-    } catch (error) {
-      const err = `Unable to refresh access token: ${error}`;
-      notify(String(err), 'danger');
-    }
-
-    setTimeout(() => {
-      refreshAccessToken(_reToken);
-    }, 300000); // Every 30 minutes
   };
 
   // Upload file to IPFS and return the generated attachment information
@@ -474,18 +437,6 @@ function BakryptLaunchpad(this: any) {
 
         notify('Request was submitted', 'success');
         console.log(jsonResponse);
-        // if (Array.isArray(jsonResponse)) {
-        //   const prAsset = jsonResponse[0];
-        //   if (prAsset.transaction) {
-        //     // Retrieve Transaction Data
-        //     retrieveTransaction(String(prAsset.transaction));
-        //   }
-        // } else if (
-        //   jsonResponse.transaction &&
-        //   (<ITransaction>jsonResponse.transaction).uuid
-        // ) {
-        //   setTransaction(jsonResponse.transaction);
-        // }
       } else {
         const jsonResponse: ErrorResponse = await submitRetryRequest.json();
         if (jsonResponse.error_description)
@@ -527,18 +478,6 @@ function BakryptLaunchpad(this: any) {
 
         notify('Refund was submitted', 'success');
         console.log(jsonResponse);
-        // if (Array.isArray(jsonResponse)) {
-        //   const prAsset = jsonResponse[0];
-        //   if (prAsset.transaction) {
-        //     // Retrieve Transaction Data
-        //     retrieveTransaction(String(prAsset.transaction));
-        //   }
-        // } else if (
-        //   jsonResponse.transaction &&
-        //   (<ITransaction>jsonResponse.transaction).uuid
-        // ) {
-        //   setTransaction(jsonResponse.transaction);
-        // }
       } else {
         const jsonResponse: ErrorResponse = await submitRefundRequest.json();
         if (jsonResponse.error_description)
@@ -595,7 +534,7 @@ function BakryptLaunchpad(this: any) {
       tabGroup.appendChild(newNode);
 
       // Renumerate panel
-      const tabs = [...tabGroup.children]
+      [...tabGroup.children]
         .filter(i => i.tagName.toLowerCase() === 'sl-tab')
         .map((i, index) => {
           const j = tabGroup.querySelector(`sl-tab-panel[name="${i.panel}"]`);
@@ -686,31 +625,6 @@ function BakryptLaunchpad(this: any) {
   };
 
   useEffect(() => {
-    const testnet = this.getAttribute('testnet');
-    setBakryptUri(
-      testnet ? 'https://testnet.bakrypt.io' : 'https://bakrypt.io'
-    );
-
-    const _access = this.getAttribute('access-token');
-    if (_access) {
-      setAccessToken(_access);
-    }
-
-    const _refresh = this.getAttribute('refresh-token');
-    if (_refresh) {
-      setRefreshToken(_refresh);
-    }
-
-    const _csrfToken = this.getAttribute('csrf-token');
-    if (_csrfToken) {
-      setCSRFToken(_csrfToken);
-    }
-
-    if (refreshToken) {
-      setTimeout(() => {
-        refreshAccessToken(refreshToken);
-      }, 300000); // Every 30 minutes
-    }
     const tabGroup = this.shadowRoot.querySelector('sl-tab-group');
 
     // Add event listeners
@@ -723,7 +637,7 @@ function BakryptLaunchpad(this: any) {
       window.removeEventListener('token', pushToken);
       window.removeEventListener('upload-file', uploadFile);
     };
-  }, [accessToken]);
+  }, [accessToken, refreshToken]);
 
   return html`
     <!-- Spinner loader overlay -->
