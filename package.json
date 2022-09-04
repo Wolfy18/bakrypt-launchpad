@@ -26,7 +26,9 @@
     "@shoelace-style/shoelace": "^2.0.0-beta.74",
     "bootstrap-4-grid": "^3.4.0",
     "haunted": "^5.0.0",
-    "lit": "^2.2.5"
+    "lit": "^2.2.5",
+    "pdfjs": "^2.4.7",
+    "pdfjs-dist": "^2.16.105"
   },
   "devDependencies": {
     "@babel/preset-env": "^7.18.2",
@@ -36,6 +38,7 @@
     "@rollup/plugin-babel": "^5.3.1",
     "@rollup/plugin-node-resolve": "^13.3.0",
     "@rollup/plugin-typescript": "^8.3.2",
+    "@types/pdfjs-dist": "^2.10.378",
     "@typescript-eslint/eslint-plugin": "^4.33.0",
     "@typescript-eslint/parser": "^4.33.0",
     "@web/dev-server": "^0.1.28",

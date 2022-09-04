@@ -1,10 +1,12 @@
 import { css } from 'lit';
 import { html, component, useState, useEffect } from 'haunted';
-// import { fileTypeFromBuffer } from 'file-type';
+
+// import * as pdfjslib from 'pdfjs-dist';
+// const PDFJS = (<any>pdfjslib) as PDFJSStatic;
+
 import { useStyles } from '../hooks/useStyles';
 
 const dummyData = '';
-
 function assetFile(
   this: any,
   { url = dummyData, alt = '' }: { url: string; alt: string }
@@ -13,12 +15,7 @@ function assetFile(
   const [file, setFile] = useState(html`
     <!-- <sl-responsive-media> -->
     <p>Downloading file....</p>
-    <sl-progress-bar
-      style="margin-bottom: 1rem"
-      value="0"
-      class="progress-bar-values"
-      >0%</sl-progress-bar
-    >
+    <sl-spinner style="font-size: 3rem;"></sl-spinner>
     <!-- </sl-responsive-media> -->
   `);
 
@@ -33,7 +30,12 @@ function assetFile(
 
   useEffect(async () => {
     let response: Response | null = null;
-
+    setFile(html`
+      <!-- <sl-responsive-media> -->
+      <sl-spinner style="font-size: 3rem;"></sl-spinner>
+      <p>Loading file....</p>
+      <!-- </sl-responsive-media> -->
+    `);
     try {
       response = await fetch(
         url.replace('ipfs://', 'https://cloudflare-ipfs.com/ipfs/')
@@ -45,11 +47,15 @@ function assetFile(
 
     try {
       if (response && !response.ok) {
-        console.log('failed to load image');
+        setFile(html`
+          <!-- <sl-responsive-media> -->
+          <p>File not found.</p>
+          <!-- </sl-responsive-media> -->
+        `);
       } else if (response && response.ok && response.body) {
         // Get arrayBuffer
         const mimeType = response.headers.get('Content-Type');
-        
+
         if (mimeType) fileMediaTypeCallback(mimeType);
         if (mimeType?.includes('image')) {
           setFile(html`
@@ -71,6 +77,17 @@ function assetFile(
               alt=${alt}
               controls
             ></video>
+            <!-- </sl-responsive-media> -->
+          `);
+        } else if (mimeType?.includes('audio')) {
+          setFile(html`
+            <!-- <sl-responsive-media> -->
+            <audio
+              style="display: block; margin-bottom:1rem; object-fit: contain; width: 100% "
+              src=${url.replace('ipfs://', 'https://cloudflare-ipfs.com/ipfs/')}
+              alt=${alt}
+              controls
+            ></audio>
             <!-- </sl-responsive-media> -->
           `);
         }
