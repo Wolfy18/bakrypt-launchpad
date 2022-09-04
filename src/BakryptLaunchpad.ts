@@ -31,8 +31,10 @@ import '@shoelace-style/shoelace/dist/components/skeleton/skeleton';
 import '@shoelace-style/shoelace/dist/components/spinner/spinner';
 import '@shoelace-style/shoelace/dist/components/menu/menu';
 import '@shoelace-style/shoelace/dist/components/menu-item/menu-item';
+import '@shoelace-style/shoelace/dist/components/progress-bar/progress-bar';
+import '@shoelace-style/shoelace/dist/components/responsive-media/responsive-media';
 
-window.customElements.define('bk-asset-form', component(AssetForm));
+window.customElements.define('bk-asset-form', component(AssetForm, {observedAttributes: ['index', 'asset']}));
 
 const testTransaction: ITransaction | {} = {
   amount: 1,
@@ -520,10 +522,13 @@ function BakryptLaunchpad(
         amount: 1,
       };
 
+      collectionRequest[indx] = _asset
+      setCollectionRequest(collectionRequest);
+
       Object.defineProperty(
         newNode.querySelector('bk-asset-form'),
         'assetDetailed',
-        { writable: true, configurable: true, value: _asset }
+        { writable: true, configurable: true, value: collectionRequest[indx] }
       );
 
       // newNode
@@ -656,7 +661,7 @@ function BakryptLaunchpad(
 
         <sl-tab-panel name="0">
           <div style="text-align: left; padding-top:1rem">
-            <bk-asset-form .index=${0}></bk-asset-form>
+            <bk-asset-form .index=${0} .assetDetailed=${collectionRequest[0]}></bk-asset-form>
           </div>
         </sl-tab-panel>
       </sl-tab-group>

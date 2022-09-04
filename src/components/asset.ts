@@ -10,6 +10,12 @@ import {
 import { useStyles } from '../hooks/useStyles';
 import { IAsset, IAssetFile } from '../adapters/interfaces';
 import SlInput from '@shoelace-style/shoelace/dist/components/input/input';
+import { assetFile as fileResource } from './assetFile';
+
+window.customElements.define(
+  'asset-file',
+  component(fileResource, { observedAttributes: ['url', 'alt'] })
+);
 
 const _asset: IAsset = {
   blockchain: 'ada',
@@ -427,21 +433,14 @@ function AssetForm(
           >
             <div class="skeleton-overview">
               ${asset.image.length > 0
-                ? html`
-                    <!-- <sl-responsive-media> -->
-                    <img
-                      style="display: block; margin-bottom:1rem; object-fit: contain; width: 100% "
-                      slot="image"
-                      src=${asset.image.length > 0
-                        ? `${asset.image}`.replace(
-                            'ipfs://',
-                            'https://cloudflare-ipfs.com/ipfs/'
-                          )
-                        : ''}
-                      alt="Token cover"
-                    />
-                    <!-- </sl-responsive-media> -->
-                  `
+                ? html`<asset-file
+                    .url=${asset.image}
+                    .alt=${'Cover Image'}
+                    @media-type=${(e: any) => {
+                      setAsset({ ...asset, media_type: String(e.detail.type) });
+                      tokenCallback()
+                    }}
+                  ></asset-file>`
                 : html` <header>
                     <sl-skeleton effect="pulse"></sl-skeleton>
                   </header>`}
@@ -459,17 +458,17 @@ function AssetForm(
                 : null}
               ${asset.files && asset.files.length > 0
                 ? asset.files.map(
-                    i =>
+                    (i, idx) =>
                       html`<div class="attr-row">
-                        <img
-                          style="display: block; margin-bottom:1rem; object-fit: contain; width: 100% "
-                          slot="image"
-                          src=${i.src.replace(
-                            'ipfs://',
-                            'https://cloudflare-ipfs.com/ipfs/'
-                          )}
-                          alt=${i.name}
-                        />
+                        <asset-file
+                          .url=${i.src}
+                          .alt=${i.name}
+                          @media-type=${(e: any) => {
+                            asset.files[idx].mediaType = String(e.detail.type);
+                            setAsset({...asset, files: asset.files});
+                            tokenCallback();
+                          }}
+                        ></asset-file>
                         <h3>${i.name}</h3>
                       </div>`
                   )
@@ -505,7 +504,7 @@ function AssetForm(
             currentTarget?: HTMLInputElement;
           }) => {
             if (e.currentTarget && e.currentTarget.value.length > 0) {
-              setAsset({ ...asset, name: e.currentTarget.value });
+              setAsset({ ...asset, name: String(e.currentTarget.value).trim() });
             } else if (e.path && e.path.length > 0) {
               setAsset({ ...asset, name: e.path[0].value });
             } else if (e.originalTarget && e.originalTarget.value.length > 0) {
@@ -526,7 +525,7 @@ function AssetForm(
               currentTarget?: HTMLInputElement;
             }) => {
               if (e.currentTarget && e.currentTarget.value.length > 0) {
-                setAsset({ ...asset, asset_name: e.currentTarget.value });
+                setAsset({ ...asset, asset_name: String(e.currentTarget.value).trim() });
               } else if (e.path && e.path.length > 0) {
                 setAsset({ ...asset, asset_name: e.path[0].value });
               } else if (
@@ -623,7 +622,7 @@ function AssetForm(
             if (e.currentTarget && e.currentTarget.value.length > 0) {
               setAsset({
                 ...asset,
-                image: e.currentTarget.value,
+                image: String(e.currentTarget.value).trim(),
               });
             } else if (e.path && e.path.length > 0) {
               setAsset({ ...asset, image: e.path[0].value });
@@ -678,7 +677,7 @@ function AssetForm(
             if (e.currentTarget && e.currentTarget.value.length > 0) {
               setAsset({
                 ...asset,
-                description: e.currentTarget.value,
+                description: String(e.currentTarget.value).trim(),
               });
             } else if (e.path && e.path.length > 0) {
               setAsset({ ...asset, description: e.path[0].value });
