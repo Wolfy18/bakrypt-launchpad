@@ -42,6 +42,7 @@ export interface ITransaction {
   policy_id: string;
   invalid_slot: string;
   cost: string;
+  surety_bond: string;
   convenience_fee: string;
   blockchain_fee: string;
   is_deleted: boolean;

@@ -34,13 +34,17 @@ import '@shoelace-style/shoelace/dist/components/menu-item/menu-item';
 import '@shoelace-style/shoelace/dist/components/progress-bar/progress-bar';
 import '@shoelace-style/shoelace/dist/components/responsive-media/responsive-media';
 
-window.customElements.define('bk-asset-form', component(AssetForm, {observedAttributes: ['index', 'asset']}));
+window.customElements.define(
+  'bk-asset-form',
+  component(AssetForm, { observedAttributes: ['index', 'asset'] })
+);
 
 const testTransaction: ITransaction | {} = {
   amount: 1,
   blockchain_fee: 0.227805,
   convenience_fee: 6,
   cost: 15.25561,
+  surety_bond: 2,
   created_on: '2022-04-30 16:12:13.983673+00:00',
   deposit_address: 'addr1vxzqwzt22hkmkslkhyzt65976etatclvxvtwht6g3z8hgds8n20s8',
   description: 'Collection: 7c4dcc1b-73db-4e74-90c8-a0e2b23a0bb1',
@@ -157,7 +161,7 @@ function BakryptLaunchpad(
     rate: '',
     address: '',
   });
-  const [transaction, setTransaction] = useState();
+  const [transaction, setTransaction] = useState(testTransaction);
   const [transactionStatusVariant, setTransactionStatusVariant] = useState(
     transaction ? 'primary' : 'neutral'
   );
@@ -522,7 +526,7 @@ function BakryptLaunchpad(
         amount: 1,
       };
 
-      collectionRequest[indx] = _asset
+      collectionRequest[indx] = _asset;
       setCollectionRequest(collectionRequest);
 
       Object.defineProperty(
@@ -661,7 +665,10 @@ function BakryptLaunchpad(
 
         <sl-tab-panel name="0">
           <div style="text-align: left; padding-top:1rem">
-            <bk-asset-form .index=${0} .assetDetailed=${collectionRequest[0]}></bk-asset-form>
+            <bk-asset-form
+              .index=${0}
+              .assetDetailed=${collectionRequest[0]}
+            ></bk-asset-form>
           </div>
         </sl-tab-panel>
       </sl-tab-group>
@@ -998,6 +1005,25 @@ function BakryptLaunchpad(
               </tr>
             </thead>
             <tbody>
+              <tr>
+                <td>
+                  <p>Bond per Asset.**<br /></p>
+                </td>
+                <td>${collectionRequest.length}</td>
+                <td>1.95</td>
+                <td>${(collectionRequest.length * 1.95).toFixed(2)}</td>
+              </tr>
+
+              <tr>
+                <td>
+                  <p>Surety Bond.**</p>
+                </td>
+                <td>1</td>
+                <td>-</td>
+                <td>
+                  ${transaction ? (<ITransaction>transaction).surety_bond : ''}
+                </td>
+              </tr>
               ${transaction && (<ITransaction>transaction).has_royalties
                 ? html`<tr>
                       <td>
@@ -1032,16 +1058,6 @@ function BakryptLaunchpad(
                       </td>
                     </tr>`
                 : null}
-
-              <tr>
-                <td>
-                  <p>Bond per Asset.**<br /></p>
-                </td>
-                <td>${collectionRequest.length}</td>
-                <td>1.95</td>
-                <td>${(collectionRequest.length * 1.95).toFixed(2)}</td>
-              </tr>
-
               <tr>
                 <td>
                   <p><strong>Convenience Fee</strong></p>
