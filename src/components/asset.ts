@@ -299,6 +299,7 @@ function AssetForm(
       mediaTypeInput.label = 'MediaType';
       mediaTypeInput.type = 'text';
       mediaTypeInput.placeholder = 'Media type e.g. image/jpg';
+      mediaTypeInput.readonly = true;
       mediaTypeInput.addEventListener('input', (e: any) => {
         if (e.currentTarget && e.currentTarget.value.length > 0) {
           file.mediaType = e.currentTarget.value;
@@ -438,7 +439,7 @@ function AssetForm(
                     .alt=${'Cover Image'}
                     @media-type=${(e: any) => {
                       setAsset({ ...asset, media_type: String(e.detail.type) });
-                      tokenCallback()
+                      tokenCallback();
                     }}
                   ></asset-file>`
                 : html` <header>
@@ -465,7 +466,7 @@ function AssetForm(
                           .alt=${i.name}
                           @media-type=${(e: any) => {
                             asset.files[idx].mediaType = String(e.detail.type);
-                            setAsset({...asset, files: asset.files});
+                            setAsset({ ...asset, files: asset.files });
                             tokenCallback();
                           }}
                         ></asset-file>
@@ -504,7 +505,10 @@ function AssetForm(
             currentTarget?: HTMLInputElement;
           }) => {
             if (e.currentTarget && e.currentTarget.value.length > 0) {
-              setAsset({ ...asset, name: String(e.currentTarget.value).trim() });
+              setAsset({
+                ...asset,
+                name: String(e.currentTarget.value).trim(),
+              });
             } else if (e.path && e.path.length > 0) {
               setAsset({ ...asset, name: e.path[0].value });
             } else if (e.originalTarget && e.originalTarget.value.length > 0) {
@@ -525,7 +529,10 @@ function AssetForm(
               currentTarget?: HTMLInputElement;
             }) => {
               if (e.currentTarget && e.currentTarget.value.length > 0) {
-                setAsset({ ...asset, asset_name: String(e.currentTarget.value).trim() });
+                setAsset({
+                  ...asset,
+                  asset_name: String(e.currentTarget.value).trim(),
+                });
               } else if (e.path && e.path.length > 0) {
                 setAsset({ ...asset, asset_name: e.path[0].value });
               } else if (
