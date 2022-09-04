@@ -1007,7 +1007,7 @@ function BakryptLaunchpad(
             <tbody>
               <tr>
                 <td>
-                  <p>Bond per Asset.**<br /></p>
+                  <p>** Bond per Asset.<br /></p>
                 </td>
                 <td>${collectionRequest.length}</td>
                 <td>1.95</td>
@@ -1016,10 +1016,10 @@ function BakryptLaunchpad(
 
               <tr>
                 <td>
-                  <p>Surety Bond.**</p>
+                  <p>** Surety Bond.</p>
                 </td>
                 <td>1</td>
-                <td>-</td>
+                <td>1</td>
                 <td>
                   ${transaction ? (<ITransaction>transaction).surety_bond : ''}
                 </td>
