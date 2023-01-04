@@ -1,5 +1,5 @@
 import { css } from 'lit';
-import { html, component, useEffect, useState, useCallback } from 'haunted';
+import { html, component, useEffect, useState } from 'haunted';
 import shoeStyles from '@shoelace-style/shoelace/dist/themes/light.styles';
 import { style } from './assets/css/main.css';
 import { useStyles } from './hooks/useStyles';
@@ -8,38 +8,71 @@ import {
   IAsset,
   ITransaction,
   IFile,
-  AccessToken,
   ErrorResponse,
 } from './adapters/interfaces';
-import '@shoelace-style/shoelace/dist/components/tab-group/tab-group';
-import '@shoelace-style/shoelace/dist/components/tab/tab';
-import '@shoelace-style/shoelace/dist/components/tab-panel/tab-panel';
-import '@shoelace-style/shoelace/dist/components/button/button';
-import '@shoelace-style/shoelace/dist/components/input/input';
-import '@shoelace-style/shoelace/dist/components/textarea/textarea';
-import '@shoelace-style/shoelace/dist/components/divider/divider';
-import '@shoelace-style/shoelace/dist/components/alert/alert';
-import '@shoelace-style/shoelace/dist/components/icon/icon';
-import '@shoelace-style/shoelace/dist/components/icon-button/icon-button';
-import '@shoelace-style/shoelace/dist/components/details/details';
-import '@shoelace-style/shoelace/dist/components/button-group/button-group';
-import '@shoelace-style/shoelace/dist/components/badge/badge';
-import '@shoelace-style/shoelace/dist/components/card/card';
-import '@shoelace-style/shoelace/dist/components/dialog/dialog';
-import '@shoelace-style/shoelace/dist/components/qr-code/qr-code';
-import '@shoelace-style/shoelace/dist/components/skeleton/skeleton';
-import '@shoelace-style/shoelace/dist/components/spinner/spinner';
-import '@shoelace-style/shoelace/dist/components/menu/menu';
-import '@shoelace-style/shoelace/dist/components/menu-item/menu-item';
-import '@shoelace-style/shoelace/dist/components/progress-bar/progress-bar';
-import '@shoelace-style/shoelace/dist/components/responsive-media/responsive-media';
+
+import 'bakrypt-invoice/dist/src/bakrypt-invoice';
+import SlTabGroup from '@shoelace-style/shoelace/dist/components/tab-group/tab-group';
+import SlTab from '@shoelace-style/shoelace/dist/components/tab/tab';
+import SlTabPanel from '@shoelace-style/shoelace/dist/components/tab-panel/tab-panel';
+import SlCard from '@shoelace-style/shoelace/dist/components/card/card';
+import SlDialog from '@shoelace-style/shoelace/dist/components/dialog/dialog';
+import SlSkeleton from '@shoelace-style/shoelace/dist/components/skeleton/skeleton';
+import SlSpinner from '@shoelace-style/shoelace/dist/components/spinner/spinner';
+import SlMenu from '@shoelace-style/shoelace/dist/components/menu/menu';
+import SlMenuItem from '@shoelace-style/shoelace/dist/components/menu-item/menu-item';
+import SlProgressBar from '@shoelace-style/shoelace/dist/components/progress-bar/progress-bar';
+import SlResponsiveMedia from '@shoelace-style/shoelace/dist/components/responsive-media/responsive-media';
+
+// if (!customElements.get('bakrypt-invoice')) {
+//   customElements.define(
+//     'bakrypt-invoice',
+//     component(BakryptInvoice, {
+//       observedAttributes: ['transaction', 'collection'],
+//     })
+//   );
+// }
+
+if (!customElements.get('sl-tab-group')) {
+  customElements.define('sl-tab-group', SlTabGroup);
+}
+if (!customElements.get('sl-tab')) {
+  customElements.define('sl-tab', SlTab);
+}
+if (!customElements.get('sl-tab-panel')) {
+  customElements.define('sl-tab-panel', SlTabPanel);
+}
+if (!customElements.get('sl-card')) {
+  customElements.define('sl-card', SlCard);
+}
+if (!customElements.get('sl-dialog')) {
+  customElements.define('sl-dialog', SlDialog);
+}
+if (!customElements.get('sl-skeleton')) {
+  customElements.define('sl-skeleton', SlSkeleton);
+}
+if (!customElements.get('sl-spinner')) {
+  customElements.define('sl-spinner', SlSpinner);
+}
+if (!customElements.get('sl-menu')) {
+  customElements.define('sl-menu', SlMenu);
+}
+if (!customElements.get('sl-menu-item')) {
+  customElements.define('sl-menu-item', SlMenuItem);
+}
+if (!customElements.get('sl-progress-bar')) {
+  customElements.define('sl-progress-bar', SlProgressBar);
+}
+if (!customElements.get('sl-responsive-media')) {
+  customElements.define('sl-responsive-media', SlResponsiveMedia);
+}
 
 window.customElements.define(
   'bk-asset-form',
   component(AssetForm, { observedAttributes: ['index', 'asset'] })
 );
 
-const testTransaction: ITransaction | {} = {
+const testTransaction: ITransaction = {
   amount: 1,
   blockchain_fee: 0.227805,
   convenience_fee: 6,
@@ -69,13 +102,15 @@ const testTransaction: ITransaction | {} = {
   royalties_minted_on: null,
   royalties_rate: '3.00',
   royalties_estimated_cost: 0.227805,
-  status: 'waiting',
+  status: 'canceled',
   status_description: 'Waiting for funds',
   type: 'ADA',
   updated_on: '2022-04-30 16:12:16.840865+00:00',
   expires_on: '2022-04-31 16:12:16.840865+00:00',
   uuid: '20baaf19-7cd6-4723-95c6-b1f554a27bbb',
 };
+
+type StringArrayIAsset = string;
 
 function BakryptLaunchpad(
   this: any,
@@ -84,11 +119,13 @@ function BakryptLaunchpad(
     refreshToken,
     csrfToken,
     testnet,
+    initial,
   }: {
     accessToken: string;
     refreshToken: string;
     csrfToken: string;
     testnet: string;
+    initial: StringArrayIAsset;
   }
 ) {
   useStyles(this, [
@@ -127,9 +164,8 @@ function BakryptLaunchpad(
       .sl-toast-stack {
         right: 0;
         left: auto;
-        top: 75vh;
+        top: 0vh;
       }
-
       sl-dialog::part(base) {
         max-height: 80vh;
         margin-top: 10vh;
@@ -137,13 +173,12 @@ function BakryptLaunchpad(
     `,
   ]);
 
-  const bakryptURI =
-    testnet && testnet.length
-      ? 'https://testnet.bakrypt.io'
-      : 'https://bakrypt.io';
+  const bakryptURI = testnet
+    ? 'https://testnet.bakrypt.io'
+    : 'https://bakrypt.io';
 
   const [requestLoading, setRequestLoading] = useState(false);
-
+  const [showInvoice, setShowInvoice] = useState(false);
   const [collectionRequest, setCollectionRequest] = useState([
     {
       blockchain: 'ada',
@@ -161,16 +196,10 @@ function BakryptLaunchpad(
     rate: '',
     address: '',
   });
-  const [transaction, setTransaction] = useState();
-  const [transactionStatusVariant, setTransactionStatusVariant] = useState(
-    transaction ? 'primary' : 'neutral'
-  );
-  // Escape html string
-  const escapeHtml = (text: string) => {
-    const div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
-  };
+  const [transaction, setTransaction] = useState<ITransaction>();
+  // const [transactionStatusVariant, setTransactionStatusVariant] = useState(
+  //   transaction ? 'primary' : 'neutral'
+  // );
 
   // Custom function to emit toast notifications
   const notify = (
@@ -179,7 +208,7 @@ function BakryptLaunchpad(
     icon = 'gear',
     duration = 6000
   ) => {
-    const alert = Object.assign(document.createElement('sl-alert'), {
+    const alert: any = Object.assign(document.createElement('sl-alert'), {
       variant,
       closable: true,
       duration,
@@ -276,6 +305,8 @@ function BakryptLaunchpad(
 
   // Retrieve transaction information
   const retrieveTransaction = async (uuid: string) => {
+    let tx;
+
     try {
       const requestHeaders: any = {
         'content-type': 'application/json',
@@ -298,30 +329,30 @@ function BakryptLaunchpad(
         const jsonResponse: ITransaction =
           await retrieveTransactionRequest.json();
         setTransaction(jsonResponse);
+        tx = jsonResponse;
+        // let _variant = 'primary';
 
-        let _variant = 'primary';
+        // if (
+        //   ['error', 'rejected', 'canceled'].includes(
+        //     (<ITransaction>jsonResponse).status
+        //   )
+        // ) {
+        //   _variant = 'danger';
+        // } else if (
+        //   ['burning', 'royalties', 'refund'].includes(
+        //     (<ITransaction>jsonResponse).status
+        //   )
+        // ) {
+        //   _variant = 'warning';
+        // } else if (
+        //   ['confirmed', 'stand-by'].includes(
+        //     (<ITransaction>jsonResponse).status
+        //   )
+        // ) {
+        //   _variant = 'success';
+        // }
 
-        if (
-          ['error', 'rejected', 'canceled'].includes(
-            (<ITransaction>jsonResponse).status
-          )
-        ) {
-          _variant = 'danger';
-        } else if (
-          ['burning', 'royalties', 'refund'].includes(
-            (<ITransaction>jsonResponse).status
-          )
-        ) {
-          _variant = 'warning';
-        } else if (
-          ['confirmed', 'stand-by'].includes(
-            (<ITransaction>jsonResponse).status
-          )
-        ) {
-          _variant = 'success';
-        }
-
-        setTransactionStatusVariant(_variant);
+        // setTransactionStatusVariant(_variant);
 
         // Repeat call every 15 seconds
         setTimeout(() => {
@@ -339,14 +370,17 @@ function BakryptLaunchpad(
       console.log(error);
       notify('Unable to retrieve transaction.', 'danger');
     }
+
+    return tx;
   };
 
   // Submit collection to the assets API
   const submitRequest = async (collection: IAsset[]) => {
     console.log(collection);
-    let showInvoice = false;
+    let openInvoice = false;
     setRequestLoading(true);
-
+    let submittedTx;
+    let submittedCol;
     try {
       const requestHeaders: any = {
         'content-type': 'application/json',
@@ -368,21 +402,24 @@ function BakryptLaunchpad(
           await submitCollectionRequest.json();
 
         notify('Request was submitted', 'success');
-
+        submittedCol = jsonResponse;
         if (Array.isArray(jsonResponse)) {
           const prAsset = jsonResponse[0];
           if (prAsset.transaction) {
             // Retrieve Transaction Data
-            retrieveTransaction(String(prAsset.transaction));
+            submittedTx = await retrieveTransaction(
+              String(prAsset.transaction)
+            );
           }
         } else if (
           jsonResponse.transaction &&
           (<ITransaction>jsonResponse.transaction).uuid
         ) {
-          setTransaction(jsonResponse.transaction);
+          setTransaction(<ITransaction>jsonResponse.transaction);
+          submittedTx = jsonResponse.transaction;
         }
 
-        showInvoice = true;
+        openInvoice = true;
       } else {
         const jsonResponse: ErrorResponse =
           await submitCollectionRequest.json();
@@ -410,14 +447,26 @@ function BakryptLaunchpad(
       notify(`Unable to submit request. Error: ${error}`, 'danger');
     }
     setRequestLoading(false);
-    const invDialog: any = this.shadowRoot.querySelector('sl-dialog');
-    if (invDialog && showInvoice) {
-      invDialog.show();
+
+    if (openInvoice) {
+      setShowInvoice(true);
+
+      // Add submit event
+      const event = new CustomEvent('submit', {
+        bubbles: true,
+        composed: true,
+        detail: {
+          collection: submittedCol,
+          transaction: submittedTx,
+        },
+      });
+
+      this.dispatchEvent(event);
     }
   };
 
   // Submit collection to the assets API
-  const submitRetry = async () => {
+  const submitRetry = async (Tx: ITransaction) => {
     try {
       const requestHeaders: any = {
         'content-type': 'application/json',
@@ -429,9 +478,7 @@ function BakryptLaunchpad(
       }
 
       const submitRetryRequest = await fetch(
-        `${bakryptURI}/v1/transactions/${
-          (<ITransaction>transaction).uuid
-        }/mint/`,
+        `${bakryptURI}/v1/transactions/${Tx.uuid}/mint/`,
         {
           method: 'POST',
           headers: requestHeaders,
@@ -456,8 +503,10 @@ function BakryptLaunchpad(
   };
 
   // Submit collection to the assets API
-  const submitRefund = async () => {
+  const submitRefund = async (Tx: ITransaction) => {
     setRequestLoading(true);
+    console.log(Tx);
+    console.log('----------------------------------------');
     try {
       const requestHeaders: any = {
         'content-type': 'application/json',
@@ -469,9 +518,7 @@ function BakryptLaunchpad(
       }
 
       const submitRefundRequest = await fetch(
-        `${bakryptURI}/v1/transactions/${
-          (<ITransaction>transaction).uuid
-        }/refund/`,
+        `${bakryptURI}/v1/transactions/${Tx.uuid}/refund/`,
         {
           method: 'POST',
           headers: requestHeaders,
@@ -514,20 +561,20 @@ function BakryptLaunchpad(
       // Set index
       newNode.querySelector('bk-asset-form').index = indx;
 
-      const _asset: IAsset = {
-        blockchain: 'ada',
-        name: '',
-        asset_name: '',
-        image: '',
-        media_type: '',
-        description: '',
-        files: [],
-        attrs: {},
-        amount: 1,
-      };
+      // const _asset: IAsset = {
+      //   blockchain: 'ada',
+      //   name: '',
+      //   asset_name: '',
+      //   image: '',
+      //   media_type: '',
+      //   description: '',
+      //   files: [],
+      //   attrs: {},
+      //   amount: 1,
+      // };
 
-      collectionRequest[indx] = _asset;
-      setCollectionRequest(collectionRequest);
+      // collectionRequest[indx] = _asset;
+      // setCollectionRequest(collectionRequest);
 
       Object.defineProperty(
         newNode.querySelector('bk-asset-form'),
@@ -557,14 +604,9 @@ function BakryptLaunchpad(
     }
   };
 
-  const viewTransaction = () => {
-    const dialog = this.shadowRoot.querySelector('sl-dialog');
-    if (dialog) {
-      dialog.show();
-    }
-  };
-
   const removeAsset = async (event: Event) => {
+    if (transaction) return;
+
     const tab: any = event.target;
     const tabGroup = this.shadowRoot.querySelector('sl-tab-group');
 
@@ -625,12 +667,28 @@ function BakryptLaunchpad(
   };
 
   const pushToken = (e: any) => {
+    if (transaction) return;
     const asset: IAsset = e.detail.token;
     const col = collectionRequest as Array<IAsset>;
     col[e.detail.index] = asset;
     setCollectionRequest(col);
+    return;
+  };
 
+  const pushNotification = (e: any) => {
+    const [msg, type] = e.detail;
+    notify(msg, type);
     return false;
+  };
+  const hideInvoice = () => {
+    setShowInvoice(false);
+  };
+
+  const retryTransaction = (e: any) => {
+    submitRetry(e.detail.tx);
+  };
+  const refundTransaction = (e: any) => {
+    submitRefund(e.detail.tx);
   };
 
   useEffect(() => {
@@ -638,15 +696,69 @@ function BakryptLaunchpad(
 
     // Add event listeners
     tabGroup.addEventListener('sl-close', removeAsset);
-    window.addEventListener('token', pushToken);
-    window.addEventListener('upload-file', uploadFile);
 
+    const dialog = this.shadowRoot.querySelector('sl-dialog');
+    dialog.addEventListener('sl-hide', hideInvoice);
+
+    this.addEventListener('token', pushToken);
+    this.addEventListener('upload-file', uploadFile);
+    this.addEventListener('notification', pushNotification);
+    this.addEventListener('retryTransaction', retryTransaction);
+    this.addEventListener('refundTransaction', refundTransaction);
+    this.addEventListener('hideInvoice', hideInvoice);
     return () => {
       tabGroup.removeEventListener('sl-close', removeAsset);
-      window.removeEventListener('token', pushToken);
-      window.removeEventListener('upload-file', uploadFile);
+      this.removeEventListener('token', pushToken);
+      this.removeEventListener('upload-file', uploadFile);
+      this.removeEventListener('notification', pushNotification);
+      this.removeEventListener('retryTransaction', retryTransaction);
+      this.removeEventListener('refundTransaction', refundTransaction);
+      this.removeEventListener('hideInvoice', hideInvoice);
+      dialog.removeEventListener('sl-hide', hideInvoice);
     };
-  }, [accessToken, refreshToken]);
+  }, [accessToken, refreshToken, transaction, showInvoice]);
+
+  useEffect(() => {
+    console.log(initial);
+    console.log('-------------------------- initial string started');
+    if (initial) {
+      const collection: Array<IAsset> = JSON.parse(initial);
+
+      if (Array.isArray(collection) && collection.length) {
+        for (let i = 0; i < collection.length; i += 1) {
+          pushToken({
+            detail: {
+              token: collection[i],
+              index: i,
+            },
+          });
+        }
+
+        for (let i = 0; i < collection.length; i += 1) {
+          addAsset();
+        }
+      }
+    } else {
+      pushToken({
+        detail: {
+          token: {
+            blockchain: 'ada',
+            name: '',
+            asset_name: '',
+            image: '',
+            media_type: '',
+            description: '',
+            files: [],
+            attrs: {},
+            amount: 1,
+          },
+          index: 0,
+        },
+      });
+
+      addAsset();
+    }
+  }, [initial]);
 
   return html`
     <!-- Spinner loader overlay -->
@@ -661,7 +773,7 @@ function BakryptLaunchpad(
     <!-- Tab groupand panel section -->
     <section class="component-section">
       <sl-tab-group id="mainTabsSection">
-        <sl-tab slot="nav" panel="0">Primary Asset</sl-tab>
+        <!-- <sl-tab slot="nav" panel="0">Primary Asset</sl-tab>
 
         <sl-tab-panel name="0">
           <div style="text-align: left; padding-top:1rem">
@@ -670,7 +782,7 @@ function BakryptLaunchpad(
               .assetDetailed=${collectionRequest[0]}
             ></bk-asset-form>
           </div>
-        </sl-tab-panel>
+        </sl-tab-panel> -->
       </sl-tab-group>
     </section>
 
@@ -798,7 +910,9 @@ function BakryptLaunchpad(
               >Add Asset</sl-button
             >`}
       ${transaction
-        ? html` <sl-button variant="success" @click=${viewTransaction}
+        ? html` <sl-button
+            variant="success"
+            @click=${() => setShowInvoice(true)}
             >Show Invoice</sl-button
           >`
         : null}
@@ -809,324 +923,13 @@ function BakryptLaunchpad(
       label="Invoice Details"
       class="dialog-width"
       style="--width: 95vw;"
+      .open=${showInvoice}
     >
-      <div
-        style="
-      "
-      >
-        <small style="float:right"><i>Unique Identifier</i></small>
-        <sl-input
-          maxlength="255"
-          label="Transaction UUID"
-          value=${transaction ? (<ITransaction>transaction).uuid : ''}
-          type="text"
-          readonly
-          filled
-        ></sl-input>
-
-        <div
-          style="display:grid; grid-template-columns: repeat(auto-fit, minmax(305px, 1fr)); grid-gap: 0.5rem; align-items:center; margin-bottom: 2rem"
-        >
-          <sl-details
-            summary="Click here to show a QR Code and scan the deposit address."
-          >
-            <div style="text-align:center">
-              <sl-qr-code
-                value=${transaction
-                  ? (<ITransaction>transaction).deposit_address
-                  : 'Not found'}
-                label="Scan this code for the deposit_address!"
-              ></sl-qr-code>
-            </div>
-          </sl-details>
-          <sl-alert variant="warning" open>
-            <strong>DO NOT TRANSFER FUNDS FROM AN EXCHANGE!</strong> <br />
-            We will send all tokens and change to the payor's address; meaning
-            that the payment must be done from a wallet that you can control and
-            its capable of manage native tokens on Cardano like
-            <a target="_blank" rel="nofollow" href="https://namiwallet.io/"
-              >Nami</a
-            >,
-            <a target="_blank" rel="nofollow" href="https://flint-wallet.com/"
-              >Flint</a
-            >,
-            <a
-              target="_blank"
-              rel="nofollow"
-              href="https://yoroi-wallet.com/#/"
-            >
-              Yoroi</a
-            >,
-            <a target="_blank" rel="nofollow" href="https://daedaluswallet.io/"
-              >Daedalus</a
-            >
-            or
-            <a
-              target="_blank"
-              rel="nofollow"
-              href="https://ccvault.io/app/mainnet/welcome"
-              >Eternl</a
-            >
-          </sl-alert>
-        </div>
-        <div>
-          <sl-textarea
-            style="margin-bottom:1rem"
-            label="The status refreshes every 10 seconds."
-            value=${transaction
-              ? (<ITransaction>transaction).status_description
-              : ''}
-            readonly
-            filled
-          >
-          </sl-textarea>
-          <sl-badge
-            style="margin-bottom: 2rem; display: grid"
-            .pulse=${true}
-            variant=${transactionStatusVariant}
-            >${transaction ? (<ITransaction>transaction).status : ''}</sl-badge
-          >
-          <p>
-            Please do not refresh the page, otherwise this session will be
-            restarted.
-          </p>
-          <sl-divider></sl-divider>
-          <h4>Payment Information</h4>
-          <sl-input
-            maxlength="255"
-            label="Policy ID"
-            value=${transaction ? (<ITransaction>transaction).policy_id : ''}
-            type="text"
-            readonly
-            filled
-          ></sl-input>
-          ${transaction && (<ITransaction>transaction).status !== 'confirmed'
-            ? html` <small style="float:right">Click to copy</small
-                ><sl-input
-                  maxlength="255"
-                  label="Deposit Address"
-                  value=${transaction
-                    ? (<ITransaction>transaction).deposit_address
-                    : ''}
-                  type="password"
-                  readonly
-                  filled
-                  toggle-password
-                  @click=${(e: any) => {
-                    if (e.currentTarget && e.currentTarget.value.length > 0) {
-                      const depAddr = e.currentTarget.value;
-                      navigator.clipboard.writeText(depAddr);
-                      notify('Copy to clipboard!', 'success');
-                    } else if (e.path && e.path.length > 0) {
-                      const depAddr = e.path[0].value;
-                      navigator.clipboard.writeText(depAddr);
-                      notify('Copy to clipboard!', 'success');
-                    }
-                    return false;
-                  }}
-                ></sl-input>`
-            : null}
-          <sl-input
-            maxlength="255"
-            label="Created on"
-            value=${transaction
-              ? new Date((<ITransaction>transaction).created_on).toUTCString()
-              : ''}
-            type="text"
-            readonly
-            filled
-          ></sl-input>
-          <sl-input
-            maxlength="255"
-            label="Expires on"
-            value=${transaction
-              ? new Date((<ITransaction>transaction).expires_on).toUTCString()
-              : ''}
-            type="text"
-            readonly
-            filled
-          ></sl-input>
-          <sl-input
-            maxlength="255"
-            label="Conv. Fees"
-            value=${transaction
-              ? (<ITransaction>transaction).convenience_fee
-              : ''}
-            type="text"
-            readonly
-            filled
-          ></sl-input>
-          <h4 style="color: var(--sl-color-warning-600);">
-            Payment Type:
-            ${transaction ? (<ITransaction>transaction).type : null}
-          </h4>
-          ${transaction && (<ITransaction>transaction).status !== 'confirmed'
-            ? html` <sl-input
-                maxlength="255"
-                type="number"
-                label="Processing Cost"
-                value=${transaction ? (<ITransaction>transaction).cost : ''}
-                readonly
-                filled
-              ></sl-input>`
-            : html` <sl-input
-                maxlength="255"
-                type="number"
-                label="Cost"
-                value=${transaction ? (<ITransaction>transaction).cost : ''}
-                readonly
-                filled
-              ></sl-input>`}
-          <sl-alert variant="warning" open>
-            Remember, to complete your transaction, your payment must be
-            received before the expiration time shown above. Late payments can
-            be refunded. Minted assets are non-refundable and non-transferable.
-            All times shown are UTC (Coordinated Universal Time).
-          </sl-alert>
-          <sl-divider></sl-divider>
-          <h4>Minting Summary</h4>
-          <p>
-            <small
-              ><i
-                >You must send the minimum amount of ADA shown above. Any change
-                will be returned automatically to the payor's wallet.</i
-              ></small
-            ><br /><br />
-            <small><i>**Tokens are returned to the payor's wallet.</i></small>
-          </p>
-
-          <table style="text-align:left; width: 100%">
-            <thead>
-              <tr>
-                <th>Item</th>
-                <th>Qty</th>
-                <th>Price</th>
-                <th>Total</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>
-                  <p>** Bond per Asset.<br /></p>
-                </td>
-                <td>${collectionRequest.length}</td>
-                <td>1.95</td>
-                <td>${(collectionRequest.length * 1.95).toFixed(2)}</td>
-              </tr>
-
-              <tr>
-                <td>
-                  <p>** Surety Bond.</p>
-                </td>
-                <td>1</td>
-                <td>1</td>
-                <td>
-                  ${transaction ? (<ITransaction>transaction).surety_bond : ''}
-                </td>
-              </tr>
-              ${transaction && (<ITransaction>transaction).has_royalties
-                ? html`<tr>
-                      <td>
-                        <p>Royalties Bond.**<br /></p>
-                      </td>
-                      <td>1</td>
-                      <td>
-                        ${transaction
-                          ? (<ITransaction>transaction).royalties_estimated_cost
-                          : ''}
-                      </td>
-                      <td>
-                        ${transaction
-                          ? (<ITransaction>transaction).royalties_estimated_cost
-                          : ''}
-                      </td>
-                    </tr>
-                    <tr>
-                      <td>
-                        <p><strong>Royalties Blockchain Fee</strong></p>
-                      </td>
-                      <td>1</td>
-                      <td>
-                        ${transaction
-                          ? (<ITransaction>transaction).blockchain_fee
-                          : ''}
-                      </td>
-                      <td>
-                        ${transaction
-                          ? (<ITransaction>transaction).blockchain_fee
-                          : ''}
-                      </td>
-                    </tr>`
-                : null}
-              <tr>
-                <td>
-                  <p><strong>Convenience Fee</strong></p>
-                </td>
-                <td>${collectionRequest.length}</td>
-                <td>2</td>
-                <td>
-                  ${transaction
-                    ? (<ITransaction>transaction).convenience_fee
-                    : ''}
-                </td>
-              </tr>
-
-              <tr>
-                <td>
-                  <p><strong>Blockchain Fee</strong></p>
-                </td>
-                <td>2</td>
-                <td>
-                  ${transaction
-                    ? (<ITransaction>transaction).blockchain_fee
-                    : ''}
-                </td>
-                <td>
-                  ${transaction
-                    ? html`${Number(
-                        (<ITransaction>transaction).blockchain_fee
-                      ) * 2}`
-                    : ''}
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-      <sl-divider></sl-divider>
-      <div>
-        ${transaction &&
-        (<ITransaction>transaction).status &&
-        ['rejected', 'error'].includes((<ITransaction>transaction).status)
-          ? html`
-              <sl-button
-                variant="primary"
-                style="margin-right:1rem"
-                @click=${submitRetry}
-                >Retry</sl-button
-              >
-            `
-          : null}
-        ${transaction &&
-        (<ITransaction>transaction).status &&
-        (<ITransaction>transaction).status !== 'confirmed'
-          ? html`
-              <sl-button
-                variant="warning"
-                outline
-                @click=${() => {
-                  if (confirm('Would you like to refund the transaction?')) {
-                    submitRefund();
-                  }
-                }}
-                style=""
-                >Submit Refund</sl-button
-              >
-            `
-          : null}
-      </div>
+      <bakrypt-invoice
+        .transaction=${transaction}
+        .collection=${collectionRequest}
+      ></bakrypt-invoice>
     </sl-dialog>
-
     <!-- Alert container -->
     <div class="alert-container"></div>
 

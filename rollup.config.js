@@ -8,7 +8,7 @@ import summary from 'rollup-plugin-summary';
 import babel from '@rollup/plugin-babel';
 
 export default {
-  input: 'src/index.ts',
+  input: 'src/bakrypt-launchpad.ts',
   plugins: [
     typescript(),
     // Entry point for application build; can specify a glob to build multiple

@@ -38,7 +38,7 @@ function assetFile(
     `);
     try {
       response = await fetch(
-        url.replace('ipfs://', 'https://cloudflare-ipfs.com/ipfs/')
+        url.replace('ipfs://', 'https://gateway.bakrypt.io/ipfs/')
       );
     } catch (error) {
       console.log(error);
@@ -63,7 +63,7 @@ function assetFile(
             <img
               style="display: block; margin-bottom:1rem; object-fit: contain; width: 100% "
               slot="image"
-              src=${url.replace('ipfs://', 'https://cloudflare-ipfs.com/ipfs/')}
+              src=${url.replace('ipfs://', 'https://gateway.bakrypt.io/ipfs/')}
               alt=${alt}
             />
             <!-- </sl-responsive-media> -->
@@ -73,7 +73,7 @@ function assetFile(
             <!-- <sl-responsive-media> -->
             <video
               style="display: block; margin-bottom:1rem; object-fit: contain; width: 100% "
-              src=${url.replace('ipfs://', 'https://cloudflare-ipfs.com/ipfs/')}
+              src=${url.replace('ipfs://', 'https://gateway.bakrypt.io/ipfs/')}
               alt=${alt}
               controls
             ></video>
@@ -84,7 +84,7 @@ function assetFile(
             <!-- <sl-responsive-media> -->
             <audio
               style="display: block; margin-bottom:1rem; object-fit: contain; width: 100% "
-              src=${url.replace('ipfs://', 'https://cloudflare-ipfs.com/ipfs/')}
+              src=${url.replace('ipfs://', 'https://gateway.bakrypt.io/ipfs/')}
               alt=${alt}
               controls
             ></audio>

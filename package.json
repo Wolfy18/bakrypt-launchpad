@@ -22,13 +22,10 @@
     "storybook:build": "tsc && npm run analyze -- --exclude dist && build-storybook"
   },
   "dependencies": {
-    "@emurgo/cardano-serialization-lib-asmjs": "^10.0.4",
     "@shoelace-style/shoelace": "^2.0.0-beta.74",
-    "bootstrap-4-grid": "^3.4.0",
+    "bakrypt-invoice": "^1.0.4",
     "haunted": "^5.0.0",
-    "lit": "^2.2.5",
-    "pdfjs": "^2.4.7",
-    "pdfjs-dist": "^2.16.105"
+    "lit": "^2.2.5"
   },
   "devDependencies": {
     "@babel/preset-env": "^7.18.2",

@@ -224,10 +224,16 @@ function AssetForm(
       group.appendChild(nameInput);
       group.appendChild(valueInput);
       const delFile = document.createElement('sl-button');
-      delFile.name = 'gear';
-      delFile.variant = 'danger';
-      delFile.innerHTML = 'Delete';
-      delFile.size = 'small';
+      Object.assign(delFile, {
+        name: 'gear',
+        variant: 'danger',
+        innerHTML: 'Delete',
+        size: 'small',
+      });
+      // delFile.name = 'gear';
+      // delFile.variant = 'danger';
+      // delFile.innerHTML = 'Delete';
+      // delFile.size = 'small';
 
       group.appendChild(delFile);
 
@@ -331,10 +337,24 @@ function AssetForm(
       uploadFileBtn.addEventListener('click', () => {
         requestUpload(fileInputForm, srcInput);
       });
-      uploadFileBtn.variant = 'primary';
-      uploadFileBtn.innerHTML = 'Upload file to IPFS';
+
+      Object.assign(uploadFileBtn, {
+        // name: 'gear',
+        variant: 'primary',
+        innerHTML: 'Upload file to IPFS',
+        // size: 'small',
+      });
+      // uploadFileBtn.variant = 'primary';
+      // uploadFileBtn.innerHTML = 'Upload file to IPFS';
       const clearFileBtn = document.createElement('sl-button');
-      clearFileBtn.variant = 'warning';
+      // clearFileBtn.variant = 'warning';
+      Object.assign(uploadFileBtn, {
+        // name: 'gear',
+        variant: 'primary',
+        // innerHTML: 'Upload file to IPFS',
+        // size: 'small',
+      });
+
       clearFileBtn.setAttribute('outline', '');
       clearFileBtn.addEventListener('click', () => clearFile(fileInputForm));
       clearFileBtn.innerHTML = 'Clear File';
@@ -343,10 +363,16 @@ function AssetForm(
       btnGroup.appendChild(clearFileBtn);
 
       const delFile = document.createElement('sl-button');
-      delFile.name = 'gear';
-      delFile.variant = 'danger';
-      delFile.innerHTML = 'Delete';
-      delFile.size = 'small';
+      Object.assign(delFile, {
+        name: 'gear',
+        variant: 'danger',
+        innerHTML: 'Delete',
+        size: 'small',
+      });
+      // delFile.name = 'gear';
+      // delFile.variant = 'danger';
+      // delFile.innerHTML = 'Delete';
+      // delFile.size = 'small';
 
       group.appendChild(delFile);
 

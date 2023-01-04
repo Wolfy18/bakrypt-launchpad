@@ -38,13 +38,13 @@ export interface ITransaction {
   status: string;
   status_description: string;
   fraud_status: string;
-  issuer_address: string;
+  issuer_address: string | null;
   policy_id: string;
   invalid_slot: string;
-  cost: string;
-  surety_bond: string;
-  convenience_fee: string;
-  blockchain_fee: string;
+  cost: string | number;
+  surety_bond: string | number;
+  convenience_fee: string | number;
+  blockchain_fee: string | number;
   is_deleted: boolean;
   is_minted: boolean;
   is_voided: boolean;
@@ -55,11 +55,13 @@ export interface ITransaction {
   updated_on: string;
   is_auto_processing: boolean;
   has_royalties: boolean;
+  royalties: string | null;
+  royalties_rate: string | number | null;
   royalties_minted: boolean;
-  royalties_minted_on: string;
+  royalties_minted_on: string | null;
   royalties_burned: boolean;
-  royalties_burned_on: string;
-  royalties_estimated_cost: string;
+  royalties_burned_on: string | null;
+  royalties_estimated_cost: string | number | null;
   expires_on: string;
   name: string;
   image: string;
@@ -78,4 +80,3 @@ export interface IFile {
   gateway: string;
   created_on: string;
 }
-
