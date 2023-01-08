@@ -1,0 +1,1 @@
+{"version":3,"file":"types.js","sourceRoot":"","sources":["../../src/types.ts"],"names":[],"mappings":"","sourcesContent":["declare module '@shoelace-style/shoelace/dist/themes/light.styles';\r\n\r\ninterface Window {\r\n  cardano?:any;\r\n}\r\n\r\n"]}

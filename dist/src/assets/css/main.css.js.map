@@ -1,0 +1,1 @@
+{"version":3,"file":"main.css.js","sourceRoot":"","sources":["../../../../src/assets/css/main.css.ts"],"names":[],"mappings":"AAAA,OAAO,EAAE,GAAG,EAAkB,MAAM,KAAK,CAAC;AAE1C,MAAM,CAAC,MAAM,KAAK,GAAmB,GAAG,CAAA;;;CAGvC,CAAC","sourcesContent":["import { css, CSSResultGroup } from 'lit';\r\n\r\nexport const style: CSSResultGroup = css`\r\n  :host {\r\n  }\r\n`;\r\n"]}
