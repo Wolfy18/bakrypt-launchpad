@@ -1,3 +1,7 @@
+// import { html } from 'lit';
+// import { fixture, expect } from '@open-wc/testing';
+// import { component } from 'haunted';
+// import BakryptLaunchpad from '../src/BakryptLaunchpad.js';
 import '../src/bakrypt-launchpad.js';
 describe('BakryptLaunchpad', () => {
     // let element: component(BakryptLaunchpad);

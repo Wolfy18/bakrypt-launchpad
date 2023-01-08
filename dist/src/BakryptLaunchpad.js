@@ -58,42 +58,6 @@ if (!customElements.get('sl-responsive-media')) {
     customElements.define('sl-responsive-media', SlResponsiveMedia);
 }
 window.customElements.define('bk-asset-form', component(AssetForm, { observedAttributes: ['index', 'asset'] }));
-const testTransaction = {
-    amount: 1,
-    blockchain_fee: 0.227805,
-    convenience_fee: 6,
-    cost: 15.25561,
-    surety_bond: 2,
-    created_on: '2022-04-30 16:12:13.983673+00:00',
-    deposit_address: 'addr1vxzqwzt22hkmkslkhyzt65976etatclvxvtwht6g3z8hgds8n20s8',
-    description: 'Collection: 7c4dcc1b-73db-4e74-90c8-a0e2b23a0bb1',
-    fraud_status: 'unknown',
-    has_royalties: true,
-    image: '',
-    invalid_slot: '59855240',
-    is_auto_processing: false,
-    is_deleted: false,
-    is_minted: false,
-    is_refunded: false,
-    is_resubmitted: false,
-    is_voided: false,
-    issuer_address: null,
-    name: '',
-    policy_id: '7517575ec43144fcba643475f01832ca3c3685fbb6b0b618f752700c',
-    royalties: 'addr_test1qzr84dy9syhkdy3ffn8c3mn8n2zh0wzhgwltz2dle5phaaky56y0ulyxyrz2mra05y8xsnxcgphrleag8mxs0llszrkjah',
-    royalties_burned: false,
-    royalties_burned_on: null,
-    royalties_minted: false,
-    royalties_minted_on: null,
-    royalties_rate: '3.00',
-    royalties_estimated_cost: 0.227805,
-    status: 'canceled',
-    status_description: 'Waiting for funds',
-    type: 'ADA',
-    updated_on: '2022-04-30 16:12:16.840865+00:00',
-    expires_on: '2022-04-31 16:12:16.840865+00:00',
-    uuid: '20baaf19-7cd6-4723-95c6-b1f554a27bbb',
-};
 function BakryptLaunchpad({ accessToken, refreshToken, csrfToken, testnet, initial, }) {
     useStyles(this, [
         shoeStyles,
@@ -166,7 +130,9 @@ function BakryptLaunchpad({ accessToken, refreshToken, csrfToken, testnet, initi
     //   transaction ? 'primary' : 'neutral'
     // );
     // Custom function to emit toast notifications
-    const notify = (message, variant = 'primary', icon = 'gear', duration = 6000) => {
+    const notify = (message, variant = 'primary', 
+    // icon = 'gear',
+    duration = 6000) => {
         const alert = Object.assign(document.createElement('sl-alert'), {
             variant,
             closable: true,
@@ -401,7 +367,7 @@ function BakryptLaunchpad({ accessToken, refreshToken, csrfToken, testnet, initi
                 headers: requestHeaders,
             });
             if (submitRetryRequest.ok) {
-                const jsonResponse = await submitRetryRequest.json();
+                await submitRetryRequest.json();
                 notify('Request was submitted', 'success');
                 // console.log(jsonResponse);
             }
@@ -437,7 +403,7 @@ function BakryptLaunchpad({ accessToken, refreshToken, csrfToken, testnet, initi
                 headers: requestHeaders,
             });
             if (submitRefundRequest.ok) {
-                const jsonResponse = await submitRefundRequest.json();
+                await submitRefundRequest.json();
                 notify('Refund was submitted', 'success');
                 // console.log(jsonResponse);
             }
@@ -655,7 +621,7 @@ function BakryptLaunchpad({ accessToken, refreshToken, csrfToken, testnet, initi
         <sl-tab-panel name="0">
           <div style="text-align: left; padding-top:1rem">
             <bk-asset-form
-              .index=${0}
+              .index="0"
               .assetDetailed=${collectionRequest[0]}
             ></bk-asset-form>
           </div>
