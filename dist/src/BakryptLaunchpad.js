@@ -2,8 +2,8 @@ import { css } from 'lit';
 import { html, component, useEffect, useState } from 'haunted';
 import shoeStyles from '@shoelace-style/shoelace/dist/themes/light.styles';
 import { style } from './assets/css/main.css';
-import { useStyles } from './hooks/useStyles';
-import { AssetForm } from './components/asset';
+import { useStyles } from './hooks/useStyles.js';
+import { AssetForm } from './components/asset.js';
 import 'bakrypt-invoice/dist/src/bakrypt-invoice';
 import SlTabGroup from '@shoelace-style/shoelace/dist/components/tab-group/tab-group';
 import SlTab from '@shoelace-style/shoelace/dist/components/tab/tab';
@@ -241,7 +241,7 @@ function BakryptLaunchpad({ accessToken, refreshToken, csrfToken, testnet, initi
             }
         }
         catch (error) {
-            console.log(error);
+            // console.log(error);
             notify('Unable to upload file to IPFS server', 'danger');
         }
         setRequestLoading(false);
@@ -302,14 +302,14 @@ function BakryptLaunchpad({ accessToken, refreshToken, csrfToken, testnet, initi
             }
         }
         catch (error) {
-            console.log(error);
+            // console.log(error);
             notify('Unable to retrieve transaction.', 'danger');
         }
         return tx;
     };
     // Submit collection to the assets API
     const submitRequest = async (collection) => {
-        console.log(collection);
+        // console.log(collection);
         let openInvoice = false;
         setRequestLoading(true);
         let submittedTx;
@@ -403,7 +403,7 @@ function BakryptLaunchpad({ accessToken, refreshToken, csrfToken, testnet, initi
             if (submitRetryRequest.ok) {
                 const jsonResponse = await submitRetryRequest.json();
                 notify('Request was submitted', 'success');
-                console.log(jsonResponse);
+                // console.log(jsonResponse);
             }
             else {
                 const jsonResponse = await submitRetryRequest.json();
@@ -422,8 +422,8 @@ function BakryptLaunchpad({ accessToken, refreshToken, csrfToken, testnet, initi
     // Submit collection to the assets API
     const submitRefund = async (Tx) => {
         setRequestLoading(true);
-        console.log(Tx);
-        console.log('----------------------------------------');
+        // console.log(Tx);
+        // console.log('----------------------------------------');
         try {
             const requestHeaders = {
                 'content-type': 'application/json',
@@ -439,7 +439,7 @@ function BakryptLaunchpad({ accessToken, refreshToken, csrfToken, testnet, initi
             if (submitRefundRequest.ok) {
                 const jsonResponse = await submitRefundRequest.json();
                 notify('Refund was submitted', 'success');
-                console.log(jsonResponse);
+                // console.log(jsonResponse);
             }
             else {
                 const jsonResponse = await submitRefundRequest.json();
@@ -492,7 +492,10 @@ function BakryptLaunchpad({ accessToken, refreshToken, csrfToken, testnet, initi
                 .filter(i => i.tagName.toLowerCase() === 'sl-tab')
                 .map((i, index) => {
                 const j = tabGroup.querySelector(`sl-tab-panel[name="${i.panel}"]`);
-                i.innerHTML = i.innerHTML.replace(/#[0-9]+/g, `#${index + 1}`);
+                Object.assign(i, {
+                    innerHTML: i.innerHTML.replace(/#[0-9]+/g, `#${index + 1}`),
+                });
+                // i.innerHTML = i.innerHTML.replace(/#[0-9]+/g, `#${index + 1}`);
                 i.setAttribute('panel', index);
                 j.setAttribute('name', index);
                 return i;
@@ -531,7 +534,10 @@ function BakryptLaunchpad({ accessToken, refreshToken, csrfToken, testnet, initi
                 .filter(i => i.tagName.toLowerCase() === 'sl-tab')
                 .map((i, index) => {
                 const j = tabGroup.querySelector(`sl-tab-panel[name="${i.panel}"]`);
-                i.innerHTML = i.innerHTML.replace(/#[0-9]+/g, `#${index + 1}`);
+                Object.assign(i, {
+                    innerHTML: i.innerHTML.replace(/#[0-9]+/g, `#${index + 1}`),
+                });
+                // i.innerHTML = i.innerHTML.replace(/#[0-9]+/g, `#${index + 1}`);
                 i.setAttribute('panel', index);
                 j.setAttribute('name', index);
                 const form = j.querySelector('bk-asset-form');
@@ -593,8 +599,8 @@ function BakryptLaunchpad({ accessToken, refreshToken, csrfToken, testnet, initi
         };
     }, [accessToken, refreshToken, transaction, showInvoice]);
     useEffect(() => {
-        console.log(initial);
-        console.log('-------------------------- initial string started');
+        // console.log(initial);
+        // console.log('-------------------------- initial string started');
         if (initial) {
             const collection = JSON.parse(initial);
             if (Array.isArray(collection) && collection.length) {
@@ -813,5 +819,5 @@ function BakryptLaunchpad({ accessToken, refreshToken, csrfToken, testnet, initi
         : null}
   `;
 }
-export { BakryptLaunchpad };
+export default BakryptLaunchpad;
 //# sourceMappingURL=BakryptLaunchpad.js.map

@@ -2,14 +2,14 @@ import { css } from 'lit';
 import { html, component, useEffect, useState } from 'haunted';
 import shoeStyles from '@shoelace-style/shoelace/dist/themes/light.styles';
 import { style } from './assets/css/main.css';
-import { useStyles } from './hooks/useStyles';
-import { AssetForm } from './components/asset';
+import { useStyles } from './hooks/useStyles.js';
+import { AssetForm } from './components/asset.js';
 import {
   IAsset,
   ITransaction,
   IFile,
   ErrorResponse,
-} from './adapters/interfaces';
+} from './adapters/interfaces.js';
 
 import 'bakrypt-invoice/dist/src/bakrypt-invoice';
 import SlTabGroup from '@shoelace-style/shoelace/dist/components/tab-group/tab-group';
@@ -72,43 +72,43 @@ window.customElements.define(
   component(AssetForm, { observedAttributes: ['index', 'asset'] })
 );
 
-const testTransaction: ITransaction = {
-  amount: 1,
-  blockchain_fee: 0.227805,
-  convenience_fee: 6,
-  cost: 15.25561,
-  surety_bond: 2,
-  created_on: '2022-04-30 16:12:13.983673+00:00',
-  deposit_address: 'addr1vxzqwzt22hkmkslkhyzt65976etatclvxvtwht6g3z8hgds8n20s8',
-  description: 'Collection: 7c4dcc1b-73db-4e74-90c8-a0e2b23a0bb1',
-  fraud_status: 'unknown',
-  has_royalties: true,
-  image: '',
-  invalid_slot: '59855240',
-  is_auto_processing: false,
-  is_deleted: false,
-  is_minted: false,
-  is_refunded: false,
-  is_resubmitted: false,
-  is_voided: false,
-  issuer_address: null,
-  name: '',
-  policy_id: '7517575ec43144fcba643475f01832ca3c3685fbb6b0b618f752700c',
-  royalties:
-    'addr_test1qzr84dy9syhkdy3ffn8c3mn8n2zh0wzhgwltz2dle5phaaky56y0ulyxyrz2mra05y8xsnxcgphrleag8mxs0llszrkjah',
-  royalties_burned: false,
-  royalties_burned_on: null,
-  royalties_minted: false,
-  royalties_minted_on: null,
-  royalties_rate: '3.00',
-  royalties_estimated_cost: 0.227805,
-  status: 'canceled',
-  status_description: 'Waiting for funds',
-  type: 'ADA',
-  updated_on: '2022-04-30 16:12:16.840865+00:00',
-  expires_on: '2022-04-31 16:12:16.840865+00:00',
-  uuid: '20baaf19-7cd6-4723-95c6-b1f554a27bbb',
-};
+// const testTransaction: ITransaction = {
+//   amount: 1,
+//   blockchain_fee: 0.227805,
+//   convenience_fee: 6,
+//   cost: 15.25561,
+//   surety_bond: 2,
+//   created_on: '2022-04-30 16:12:13.983673+00:00',
+//   deposit_address: 'addr1vxzqwzt22hkmkslkhyzt65976etatclvxvtwht6g3z8hgds8n20s8',
+//   description: 'Collection: 7c4dcc1b-73db-4e74-90c8-a0e2b23a0bb1',
+//   fraud_status: 'unknown',
+//   has_royalties: true,
+//   image: '',
+//   invalid_slot: '59855240',
+//   is_auto_processing: false,
+//   is_deleted: false,
+//   is_minted: false,
+//   is_refunded: false,
+//   is_resubmitted: false,
+//   is_voided: false,
+//   issuer_address: null,
+//   name: '',
+//   policy_id: '7517575ec43144fcba643475f01832ca3c3685fbb6b0b618f752700c',
+//   royalties:
+//     'addr_test1qzr84dy9syhkdy3ffn8c3mn8n2zh0wzhgwltz2dle5phaaky56y0ulyxyrz2mra05y8xsnxcgphrleag8mxs0llszrkjah',
+//   royalties_burned: false,
+//   royalties_burned_on: null,
+//   royalties_minted: false,
+//   royalties_minted_on: null,
+//   royalties_rate: '3.00',
+//   royalties_estimated_cost: 0.227805,
+//   status: 'canceled',
+//   status_description: 'Waiting for funds',
+//   type: 'ADA',
+//   updated_on: '2022-04-30 16:12:16.840865+00:00',
+//   expires_on: '2022-04-31 16:12:16.840865+00:00',
+//   uuid: '20baaf19-7cd6-4723-95c6-b1f554a27bbb',
+// };
 
 type StringArrayIAsset = string;
 
@@ -205,7 +205,7 @@ function BakryptLaunchpad(
   const notify = (
     message: string,
     variant = 'primary',
-    icon = 'gear',
+    // icon = 'gear',
     duration = 6000
   ) => {
     const alert: any = Object.assign(document.createElement('sl-alert'), {
@@ -297,7 +297,7 @@ function BakryptLaunchpad(
         else if (jsonResponse.detail) notify(jsonResponse.detail, 'danger');
       }
     } catch (error) {
-      console.log(error);
+      // console.log(error);
       notify('Unable to upload file to IPFS server', 'danger');
     }
     setRequestLoading(false);
@@ -367,7 +367,7 @@ function BakryptLaunchpad(
         else if (jsonResponse.detail) notify(jsonResponse.detail, 'danger');
       }
     } catch (error) {
-      console.log(error);
+      // console.log(error);
       notify('Unable to retrieve transaction.', 'danger');
     }
 
@@ -376,7 +376,7 @@ function BakryptLaunchpad(
 
   // Submit collection to the assets API
   const submitRequest = async (collection: IAsset[]) => {
-    console.log(collection);
+    // console.log(collection);
     let openInvoice = false;
     setRequestLoading(true);
     let submittedTx;
@@ -486,10 +486,10 @@ function BakryptLaunchpad(
       );
 
       if (submitRetryRequest.ok) {
-        const jsonResponse: IAsset[] | IAsset = await submitRetryRequest.json();
+        await submitRetryRequest.json();
 
         notify('Request was submitted', 'success');
-        console.log(jsonResponse);
+        // console.log(jsonResponse);
       } else {
         const jsonResponse: ErrorResponse = await submitRetryRequest.json();
         if (jsonResponse.error_description)
@@ -505,8 +505,8 @@ function BakryptLaunchpad(
   // Submit collection to the assets API
   const submitRefund = async (Tx: ITransaction) => {
     setRequestLoading(true);
-    console.log(Tx);
-    console.log('----------------------------------------');
+    // console.log(Tx);
+    // console.log('----------------------------------------');
     try {
       const requestHeaders: any = {
         'content-type': 'application/json',
@@ -526,11 +526,9 @@ function BakryptLaunchpad(
       );
 
       if (submitRefundRequest.ok) {
-        const jsonResponse: IAsset[] | IAsset =
-          await submitRefundRequest.json();
-
+        await submitRefundRequest.json();
         notify('Refund was submitted', 'success');
-        console.log(jsonResponse);
+        // console.log(jsonResponse);
       } else {
         const jsonResponse: ErrorResponse = await submitRefundRequest.json();
         if (jsonResponse.error_description)
@@ -595,7 +593,10 @@ function BakryptLaunchpad(
         .map((i, index) => {
           const j = tabGroup.querySelector(`sl-tab-panel[name="${i.panel}"]`);
 
-          i.innerHTML = i.innerHTML.replace(/#[0-9]+/g, `#${index + 1}`);
+          Object.assign(i, {
+            innerHTML: i.innerHTML.replace(/#[0-9]+/g, `#${index + 1}`),
+          });
+          // i.innerHTML = i.innerHTML.replace(/#[0-9]+/g, `#${index + 1}`);
 
           i.setAttribute('panel', index);
           j.setAttribute('name', index);
@@ -647,7 +648,10 @@ function BakryptLaunchpad(
         .map((i, index) => {
           const j = tabGroup.querySelector(`sl-tab-panel[name="${i.panel}"]`);
 
-          i.innerHTML = i.innerHTML.replace(/#[0-9]+/g, `#${index + 1}`);
+          Object.assign(i, {
+            innerHTML: i.innerHTML.replace(/#[0-9]+/g, `#${index + 1}`),
+          });
+          // i.innerHTML = i.innerHTML.replace(/#[0-9]+/g, `#${index + 1}`);
 
           i.setAttribute('panel', index);
           j.setAttribute('name', index);
@@ -719,8 +723,8 @@ function BakryptLaunchpad(
   }, [accessToken, refreshToken, transaction, showInvoice]);
 
   useEffect(() => {
-    console.log(initial);
-    console.log('-------------------------- initial string started');
+    // console.log(initial);
+    // console.log('-------------------------- initial string started');
     if (initial) {
       const collection: Array<IAsset> = JSON.parse(initial);
 
@@ -778,7 +782,7 @@ function BakryptLaunchpad(
         <sl-tab-panel name="0">
           <div style="text-align: left; padding-top:1rem">
             <bk-asset-form
-              .index=${0}
+              .index="0"
               .assetDetailed=${collectionRequest[0]}
             ></bk-asset-form>
           </div>
@@ -952,4 +956,4 @@ function BakryptLaunchpad(
   `;
 }
 
-export { BakryptLaunchpad };
+export default BakryptLaunchpad;

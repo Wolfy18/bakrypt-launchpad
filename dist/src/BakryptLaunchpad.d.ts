@@ -7,4 +7,4 @@ declare function BakryptLaunchpad(this: any, { accessToken, refreshToken, csrfTo
     testnet: string;
     initial: StringArrayIAsset;
 }): import("lit-html").TemplateResult<1>;
-export { BakryptLaunchpad };
+export default BakryptLaunchpad;
