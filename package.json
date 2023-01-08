@@ -5,12 +5,14 @@
   "author": "bakrypt-launchpad",
   "version": "0.0.0",
   "type": "module",
-  "main": "dist/src/index.js",
-  "module": "dist/src/index.js",
-  "exports": {
-    ".": "./dist/src/index.js",
-    "./bakrypt-launchpad.js": "./dist/src/bakrypt-launchpad.js"
-  },
+  "main": "dist/src/bakrypt-launchpad.js",
+  "module": "dist/src/bakrypt-launchpad.js",
+  "files": [
+    "dist",
+    "index.html",
+    "README.md",
+    "package.json"
+  ],
   "scripts": {
     "analyze": "cem analyze --litelement",
     "start": "tsc && concurrently -k -r \"tsc --watch --preserveWatchOutput\" \"wds\"",
