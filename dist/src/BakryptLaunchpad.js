@@ -126,9 +126,6 @@ function BakryptLaunchpad({ accessToken, refreshToken, csrfToken, testnet, initi
         address: '',
     });
     const [transaction, setTransaction] = useState();
-    // const [transactionStatusVariant, setTransactionStatusVariant] = useState(
-    //   transaction ? 'primary' : 'neutral'
-    // );
     // Custom function to emit toast notifications
     const notify = (message, variant = 'primary', 
     // icon = 'gear',
@@ -231,31 +228,6 @@ function BakryptLaunchpad({ accessToken, refreshToken, csrfToken, testnet, initi
                 const jsonResponse = await retrieveTransactionRequest.json();
                 setTransaction(jsonResponse);
                 tx = jsonResponse;
-                // let _variant = 'primary';
-                // if (
-                //   ['error', 'rejected', 'canceled'].includes(
-                //     (<ITransaction>jsonResponse).status
-                //   )
-                // ) {
-                //   _variant = 'danger';
-                // } else if (
-                //   ['burning', 'royalties', 'refund'].includes(
-                //     (<ITransaction>jsonResponse).status
-                //   )
-                // ) {
-                //   _variant = 'warning';
-                // } else if (
-                //   ['confirmed', 'stand-by'].includes(
-                //     (<ITransaction>jsonResponse).status
-                //   )
-                // ) {
-                //   _variant = 'success';
-                // }
-                // setTransactionStatusVariant(_variant);
-                // Repeat call every 15 seconds
-                setTimeout(() => {
-                    retrieveTransaction(uuid);
-                }, 10000);
             }
             else {
                 const jsonResponse = await retrieveTransactionRequest.json();
@@ -352,76 +324,6 @@ function BakryptLaunchpad({ accessToken, refreshToken, csrfToken, testnet, initi
             this.dispatchEvent(event);
         }
     };
-    // Submit collection to the assets API
-    const submitRetry = async (Tx) => {
-        try {
-            const requestHeaders = {
-                'content-type': 'application/json',
-                Authorization: `Bearer ${accessToken}`,
-            };
-            if (csrfToken && csrfToken.length > 0) {
-                requestHeaders['X-CSRFToken'] = csrfToken;
-            }
-            const submitRetryRequest = await fetch(`${bakryptURI}/v1/transactions/${Tx.uuid}/mint/`, {
-                method: 'POST',
-                headers: requestHeaders,
-            });
-            if (submitRetryRequest.ok) {
-                await submitRetryRequest.json();
-                notify('Request was submitted', 'success');
-                // console.log(jsonResponse);
-            }
-            else {
-                const jsonResponse = await submitRetryRequest.json();
-                if (jsonResponse.error_description)
-                    notify(jsonResponse.error_description, 'danger');
-                else if (jsonResponse.error)
-                    notify(jsonResponse.error, 'danger');
-                else if (jsonResponse.detail)
-                    notify(jsonResponse.detail, 'danger');
-            }
-        }
-        catch (error) {
-            notify(`Unable to submit request. Error: ${error}`, 'danger');
-        }
-    };
-    // Submit collection to the assets API
-    const submitRefund = async (Tx) => {
-        setRequestLoading(true);
-        // console.log(Tx);
-        // console.log('----------------------------------------');
-        try {
-            const requestHeaders = {
-                'content-type': 'application/json',
-                Authorization: `Bearer ${accessToken}`,
-            };
-            if (csrfToken && csrfToken.length > 0) {
-                requestHeaders['X-CSRFToken'] = csrfToken;
-            }
-            const submitRefundRequest = await fetch(`${bakryptURI}/v1/transactions/${Tx.uuid}/refund/`, {
-                method: 'POST',
-                headers: requestHeaders,
-            });
-            if (submitRefundRequest.ok) {
-                await submitRefundRequest.json();
-                notify('Refund was submitted', 'success');
-                // console.log(jsonResponse);
-            }
-            else {
-                const jsonResponse = await submitRefundRequest.json();
-                if (jsonResponse.error_description)
-                    notify(jsonResponse.error_description, 'danger');
-                else if (jsonResponse.error)
-                    notify(jsonResponse.error, 'danger');
-                else if (jsonResponse.detail)
-                    notify(jsonResponse.detail, 'danger');
-            }
-        }
-        catch (error) {
-            notify(`Unable to refund request. Error: ${error}`, 'danger');
-        }
-        setRequestLoading(false);
-    };
     // Add additional tab and panel
     const addAsset = () => {
         const template = this.shadowRoot
@@ -434,23 +336,7 @@ function BakryptLaunchpad({ accessToken, refreshToken, csrfToken, testnet, initi
             const newNode = template.content.cloneNode(true);
             // Set index
             newNode.querySelector('bk-asset-form').index = indx;
-            // const _asset: IAsset = {
-            //   blockchain: 'ada',
-            //   name: '',
-            //   asset_name: '',
-            //   image: '',
-            //   media_type: '',
-            //   description: '',
-            //   files: [],
-            //   attrs: {},
-            //   amount: 1,
-            // };
-            // collectionRequest[indx] = _asset;
-            // setCollectionRequest(collectionRequest);
             Object.defineProperty(newNode.querySelector('bk-asset-form'), 'assetDetailed', { writable: true, configurable: true, value: collectionRequest[indx] });
-            // newNode
-            //   .querySelector('bk-asset-form')
-            //   .addEventListener('upload-file', uploadFile);
             // newTab.active = true;
             tabGroup.appendChild(newNode);
             // Renumerate panel
@@ -535,12 +421,12 @@ function BakryptLaunchpad({ accessToken, refreshToken, csrfToken, testnet, initi
     const hideInvoice = () => {
         setShowInvoice(false);
     };
-    const retryTransaction = (e) => {
-        submitRetry(e.detail.tx);
-    };
-    const refundTransaction = (e) => {
-        submitRefund(e.detail.tx);
-    };
+    // const retryTransaction = (e: any) => {
+    //   submitRetry(e.detail.tx);
+    // };
+    // const refundTransaction = (e: any) => {
+    //   submitRefund(e.detail.tx);
+    // };
     useEffect(() => {
         const tabGroup = this.shadowRoot.querySelector('sl-tab-group');
         // Add event listeners
@@ -550,16 +436,16 @@ function BakryptLaunchpad({ accessToken, refreshToken, csrfToken, testnet, initi
         this.addEventListener('token', pushToken);
         this.addEventListener('upload-file', uploadFile);
         this.addEventListener('notification', pushNotification);
-        this.addEventListener('retryTransaction', retryTransaction);
-        this.addEventListener('refundTransaction', refundTransaction);
+        // this.addEventListener('retryTransaction', retryTransaction);
+        // this.addEventListener('refundTransaction', refundTransaction);
         this.addEventListener('hideInvoice', hideInvoice);
         return () => {
             tabGroup.removeEventListener('sl-close', removeAsset);
             this.removeEventListener('token', pushToken);
             this.removeEventListener('upload-file', uploadFile);
             this.removeEventListener('notification', pushNotification);
-            this.removeEventListener('retryTransaction', retryTransaction);
-            this.removeEventListener('refundTransaction', refundTransaction);
+            // this.removeEventListener('retryTransaction', retryTransaction);
+            // this.removeEventListener('refundTransaction', refundTransaction);
             this.removeEventListener('hideInvoice', hideInvoice);
             dialog.removeEventListener('sl-hide', hideInvoice);
         };
@@ -762,6 +648,8 @@ function BakryptLaunchpad({ accessToken, refreshToken, csrfToken, testnet, initi
       <bakrypt-invoice
         .transaction=${transaction}
         .collection=${collectionRequest}
+        .accessToken=${accessToken}
+        .testnet=${testnet}
       ></bakrypt-invoice>
     </sl-dialog>
     <!-- Alert container -->

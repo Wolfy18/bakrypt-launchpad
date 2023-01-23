@@ -1,15 +1,6 @@
 import { css } from 'lit';
 import { html, component, useEffect, useState } from 'haunted';
 import shoeStyles from '@shoelace-style/shoelace/dist/themes/light.styles';
-import { style } from './assets/css/main.css';
-import { useStyles } from './hooks/useStyles.js';
-import { AssetForm } from './components/asset.js';
-import {
-  IAsset,
-  ITransaction,
-  IFile,
-  ErrorResponse,
-} from './adapters/interfaces.js';
 
 import 'bakrypt-invoice/dist/src/bakrypt-invoice';
 import SlTabGroup from '@shoelace-style/shoelace/dist/components/tab-group/tab-group';
@@ -23,6 +14,15 @@ import SlMenu from '@shoelace-style/shoelace/dist/components/menu/menu';
 import SlMenuItem from '@shoelace-style/shoelace/dist/components/menu-item/menu-item';
 import SlProgressBar from '@shoelace-style/shoelace/dist/components/progress-bar/progress-bar';
 import SlResponsiveMedia from '@shoelace-style/shoelace/dist/components/responsive-media/responsive-media';
+import {
+  IAsset,
+  ITransaction,
+  IFile,
+  ErrorResponse,
+} from './adapters/interfaces.js';
+import { AssetForm } from './components/asset.js';
+import { useStyles } from './hooks/useStyles.js';
+import { style } from './assets/css/main.css';
 
 // if (!customElements.get('bakrypt-invoice')) {
 //   customElements.define(
@@ -197,9 +197,6 @@ function BakryptLaunchpad(
     address: '',
   });
   const [transaction, setTransaction] = useState<ITransaction>();
-  // const [transactionStatusVariant, setTransactionStatusVariant] = useState(
-  //   transaction ? 'primary' : 'neutral'
-  // );
 
   // Custom function to emit toast notifications
   const notify = (
@@ -330,34 +327,6 @@ function BakryptLaunchpad(
           await retrieveTransactionRequest.json();
         setTransaction(jsonResponse);
         tx = jsonResponse;
-        // let _variant = 'primary';
-
-        // if (
-        //   ['error', 'rejected', 'canceled'].includes(
-        //     (<ITransaction>jsonResponse).status
-        //   )
-        // ) {
-        //   _variant = 'danger';
-        // } else if (
-        //   ['burning', 'royalties', 'refund'].includes(
-        //     (<ITransaction>jsonResponse).status
-        //   )
-        // ) {
-        //   _variant = 'warning';
-        // } else if (
-        //   ['confirmed', 'stand-by'].includes(
-        //     (<ITransaction>jsonResponse).status
-        //   )
-        // ) {
-        //   _variant = 'success';
-        // }
-
-        // setTransactionStatusVariant(_variant);
-
-        // Repeat call every 15 seconds
-        setTimeout(() => {
-          retrieveTransaction(uuid);
-        }, 10000);
       } else {
         const jsonResponse: ErrorResponse =
           await retrieveTransactionRequest.json();
@@ -465,83 +434,6 @@ function BakryptLaunchpad(
     }
   };
 
-  // Submit collection to the assets API
-  const submitRetry = async (Tx: ITransaction) => {
-    try {
-      const requestHeaders: any = {
-        'content-type': 'application/json',
-        Authorization: `Bearer ${accessToken}`,
-      };
-
-      if (csrfToken && csrfToken.length > 0) {
-        requestHeaders['X-CSRFToken'] = csrfToken;
-      }
-
-      const submitRetryRequest = await fetch(
-        `${bakryptURI}/v1/transactions/${Tx.uuid}/mint/`,
-        {
-          method: 'POST',
-          headers: requestHeaders,
-        }
-      );
-
-      if (submitRetryRequest.ok) {
-        await submitRetryRequest.json();
-
-        notify('Request was submitted', 'success');
-        // console.log(jsonResponse);
-      } else {
-        const jsonResponse: ErrorResponse = await submitRetryRequest.json();
-        if (jsonResponse.error_description)
-          notify(jsonResponse.error_description, 'danger');
-        else if (jsonResponse.error) notify(jsonResponse.error, 'danger');
-        else if (jsonResponse.detail) notify(jsonResponse.detail, 'danger');
-      }
-    } catch (error) {
-      notify(`Unable to submit request. Error: ${error}`, 'danger');
-    }
-  };
-
-  // Submit collection to the assets API
-  const submitRefund = async (Tx: ITransaction) => {
-    setRequestLoading(true);
-    // console.log(Tx);
-    // console.log('----------------------------------------');
-    try {
-      const requestHeaders: any = {
-        'content-type': 'application/json',
-        Authorization: `Bearer ${accessToken}`,
-      };
-
-      if (csrfToken && csrfToken.length > 0) {
-        requestHeaders['X-CSRFToken'] = csrfToken;
-      }
-
-      const submitRefundRequest = await fetch(
-        `${bakryptURI}/v1/transactions/${Tx.uuid}/refund/`,
-        {
-          method: 'POST',
-          headers: requestHeaders,
-        }
-      );
-
-      if (submitRefundRequest.ok) {
-        await submitRefundRequest.json();
-        notify('Refund was submitted', 'success');
-        // console.log(jsonResponse);
-      } else {
-        const jsonResponse: ErrorResponse = await submitRefundRequest.json();
-        if (jsonResponse.error_description)
-          notify(jsonResponse.error_description, 'danger');
-        else if (jsonResponse.error) notify(jsonResponse.error, 'danger');
-        else if (jsonResponse.detail) notify(jsonResponse.detail, 'danger');
-      }
-    } catch (error) {
-      notify(`Unable to refund request. Error: ${error}`, 'danger');
-    }
-    setRequestLoading(false);
-  };
-
   // Add additional tab and panel
   const addAsset = () => {
     const template = this.shadowRoot
@@ -559,30 +451,11 @@ function BakryptLaunchpad(
       // Set index
       newNode.querySelector('bk-asset-form').index = indx;
 
-      // const _asset: IAsset = {
-      //   blockchain: 'ada',
-      //   name: '',
-      //   asset_name: '',
-      //   image: '',
-      //   media_type: '',
-      //   description: '',
-      //   files: [],
-      //   attrs: {},
-      //   amount: 1,
-      // };
-
-      // collectionRequest[indx] = _asset;
-      // setCollectionRequest(collectionRequest);
-
       Object.defineProperty(
         newNode.querySelector('bk-asset-form'),
         'assetDetailed',
         { writable: true, configurable: true, value: collectionRequest[indx] }
       );
-
-      // newNode
-      //   .querySelector('bk-asset-form')
-      //   .addEventListener('upload-file', uploadFile);
 
       // newTab.active = true;
       tabGroup.appendChild(newNode);
@@ -676,7 +549,6 @@ function BakryptLaunchpad(
     const col = collectionRequest as Array<IAsset>;
     col[e.detail.index] = asset;
     setCollectionRequest(col);
-    return;
   };
 
   const pushNotification = (e: any) => {
@@ -688,12 +560,12 @@ function BakryptLaunchpad(
     setShowInvoice(false);
   };
 
-  const retryTransaction = (e: any) => {
-    submitRetry(e.detail.tx);
-  };
-  const refundTransaction = (e: any) => {
-    submitRefund(e.detail.tx);
-  };
+  // const retryTransaction = (e: any) => {
+  //   submitRetry(e.detail.tx);
+  // };
+  // const refundTransaction = (e: any) => {
+  //   submitRefund(e.detail.tx);
+  // };
 
   useEffect(() => {
     const tabGroup = this.shadowRoot.querySelector('sl-tab-group');
@@ -707,16 +579,16 @@ function BakryptLaunchpad(
     this.addEventListener('token', pushToken);
     this.addEventListener('upload-file', uploadFile);
     this.addEventListener('notification', pushNotification);
-    this.addEventListener('retryTransaction', retryTransaction);
-    this.addEventListener('refundTransaction', refundTransaction);
+    // this.addEventListener('retryTransaction', retryTransaction);
+    // this.addEventListener('refundTransaction', refundTransaction);
     this.addEventListener('hideInvoice', hideInvoice);
     return () => {
       tabGroup.removeEventListener('sl-close', removeAsset);
       this.removeEventListener('token', pushToken);
       this.removeEventListener('upload-file', uploadFile);
       this.removeEventListener('notification', pushNotification);
-      this.removeEventListener('retryTransaction', retryTransaction);
-      this.removeEventListener('refundTransaction', refundTransaction);
+      // this.removeEventListener('retryTransaction', retryTransaction);
+      // this.removeEventListener('refundTransaction', refundTransaction);
       this.removeEventListener('hideInvoice', hideInvoice);
       dialog.removeEventListener('sl-hide', hideInvoice);
     };
@@ -776,18 +648,7 @@ function BakryptLaunchpad(
 
     <!-- Tab groupand panel section -->
     <section class="component-section">
-      <sl-tab-group id="mainTabsSection">
-        <!-- <sl-tab slot="nav" panel="0">Primary Asset</sl-tab>
-
-        <sl-tab-panel name="0">
-          <div style="text-align: left; padding-top:1rem">
-            <bk-asset-form
-              .index="0"
-              .assetDetailed=${collectionRequest[0]}
-            ></bk-asset-form>
-          </div>
-        </sl-tab-panel> -->
-      </sl-tab-group>
+      <sl-tab-group id="mainTabsSection"> </sl-tab-group>
     </section>
 
     <!-- Royalties section -->
@@ -932,6 +793,8 @@ function BakryptLaunchpad(
       <bakrypt-invoice
         .transaction=${transaction}
         .collection=${collectionRequest}
+        .accessToken=${accessToken}
+        .testnet=${testnet}
       ></bakrypt-invoice>
     </sl-dialog>
     <!-- Alert container -->
