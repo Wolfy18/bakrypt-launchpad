@@ -1,9 +1,6 @@
 import { css } from 'lit';
 import { html, component, useEffect, useState } from 'haunted';
 import shoeStyles from '@shoelace-style/shoelace/dist/themes/light.styles';
-import { style } from './assets/css/main.css';
-import { useStyles } from './hooks/useStyles.js';
-import { AssetForm } from './components/asset.js';
 import 'bakrypt-invoice/dist/src/bakrypt-invoice';
 import SlTabGroup from '@shoelace-style/shoelace/dist/components/tab-group/tab-group';
 import SlTab from '@shoelace-style/shoelace/dist/components/tab/tab';
@@ -16,6 +13,9 @@ import SlMenu from '@shoelace-style/shoelace/dist/components/menu/menu';
 import SlMenuItem from '@shoelace-style/shoelace/dist/components/menu-item/menu-item';
 import SlProgressBar from '@shoelace-style/shoelace/dist/components/progress-bar/progress-bar';
 import SlResponsiveMedia from '@shoelace-style/shoelace/dist/components/responsive-media/responsive-media';
+import { AssetForm } from './components/asset.js';
+import { useStyles } from './hooks/useStyles.js';
+import { style } from './assets/css/main.css';
 // if (!customElements.get('bakrypt-invoice')) {
 //   customElements.define(
 //     'bakrypt-invoice',
@@ -411,7 +411,6 @@ function BakryptLaunchpad({ accessToken, refreshToken, csrfToken, testnet, initi
         const col = collectionRequest;
         col[e.detail.index] = asset;
         setCollectionRequest(col);
-        return;
     };
     const pushNotification = (e) => {
         const [msg, type] = e.detail;
@@ -501,18 +500,7 @@ function BakryptLaunchpad({ accessToken, refreshToken, csrfToken, testnet, initi
 
     <!-- Tab groupand panel section -->
     <section class="component-section">
-      <sl-tab-group id="mainTabsSection">
-        <!-- <sl-tab slot="nav" panel="0">Primary Asset</sl-tab>
-
-        <sl-tab-panel name="0">
-          <div style="text-align: left; padding-top:1rem">
-            <bk-asset-form
-              .index="0"
-              .assetDetailed=${collectionRequest[0]}
-            ></bk-asset-form>
-          </div>
-        </sl-tab-panel> -->
-      </sl-tab-group>
+      <sl-tab-group id="mainTabsSection"> </sl-tab-group>
     </section>
 
     <!-- Royalties section -->
