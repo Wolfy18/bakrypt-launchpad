@@ -795,7 +795,7 @@ function BakryptLaunchpad(
         .collection=${collectionRequest}
         .accessToken=${accessToken}
         .testnet=${testnet}
-        .csrftoken=${csrfToken}
+        .csrfToken=${csrfToken}
       ></bakrypt-invoice>
     </sl-dialog>
     <!-- Alert container -->
